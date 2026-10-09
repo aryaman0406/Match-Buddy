@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { match, players, initialEvents, storyFallback, rulesDictionary } from "@/data/match";
 
-// In-memory rate limiting: 20 requests per IP per 10 minutes (Prompt 5 requirement)
+// In-memory rate limiting: 20 requests per IP per 10 minutes
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 20;
 
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
   try {
     const { kind, id, text, language = "en", matchState } = body || {};
 
-    // 2. Validate input (Prompt 5 requirement: return 400 on bad input)
+    // 2. Validate input: return 400 on bad input
     if (!kind || !["player", "event", "question", "story"].includes(kind)) {
       return new Response(
         JSON.stringify({ error: "Invalid kind. Must be 'player', 'event', 'question', or 'story'." }),
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
     const currentMatch = matchState || match;
     const matchContext = `Match: ${currentMatch.teams.join(" vs ")}, ${currentMatch.series}. Current Score: ${currentMatch.score} in ${currentMatch.overs} overs. Target: ${currentMatch.target}. Runs needed: ${currentMatch.runsNeeded} from ${currentMatch.ballsLeft} balls. Required Run Rate: ${currentMatch.requiredRunRate}.`;
 
-    // Non-sports question check (Prompt 5 requirement)
+    // Non-sports question check
     if (kind === "question" && text) {
       const lowerText = text.toLowerCase();
       // Obvious non-sports questions (e.g., "write my homework", "what is the capital of France")

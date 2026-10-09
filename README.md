@@ -1,6 +1,5 @@
 # Match Buddy 🏏
-> **AI Companion for Casual Fans Watching a Live Cricket Match**  
-> *Built for the Dream11 Forward Deployed Engineer (FDE) Intern Take-Home Assignment*
+> **AI Companion for Casual Fans Watching a Live Cricket Match**
 
 ---
 
@@ -91,7 +90,7 @@ Watching live cricket with friends can be intimidating for casual fans. When com
    ANTHROPIC_API_KEY=sk-ant-api03-...
    ANTHROPIC_MODEL=claude-3-5-haiku-20241022
    ```
-   > *Note:* If you run without an API key, Match Buddy will automatically use its built-in verified fallback streaming engine so reviewers can test the entire UI and experience without requiring their own API balance!
+   > *Note:* If you run without an API key, Match Buddy will automatically use its built-in verified fallback streaming engine so you can test the entire UI and experience without needing your own API balance!
 
 3. **Start the local development server:**
    ```bash
@@ -106,7 +105,7 @@ Watching live cricket with friends can be intimidating for casual fans. When com
 
 ---
 
-## 🌐 6. Vercel Deployment Instructions
+## 🌐 6. Deployment (Vercel)
 
 1. **Push your code to GitHub:**
    ```bash
@@ -126,26 +125,3 @@ Watching live cricket with friends can be intimidating for casual fans. When com
 4. **Deploy:**
    - Click **Deploy**. Vercel will build and deploy the app to a production URL (e.g., `https://match-buddy-xxx.vercel.app`).
    - Test on your mobile phone over mobile data!
-
----
-
-## 📝 7. 200-Word Note for Dream11 Assignment Submission
-
-> **Fan Problem:**  
-> When watching cricket with passionate friends, casual fans frequently miss out on the excitement because cricket terminology and rapid match tactics feel like an exclusive club. Mid-over googling causes them to miss the very next delivery, and asking friends repeatedly feels awkward.
->
-> **How Match Buddy Solves It:**  
-> Match Buddy is a live cricket companion crafted for casual fans. Tapping any player immediately delivers a 3-sentence intro explaining who they are and why their current innings matters right now. Tapping any event or typing any unfamiliar rule (from Free Hits to DLS) returns an instant 2-sentence breakdown linked to the live match state. It seamlessly switches between conversational English and Romanized Hinglish, sounding like a knowledgeable friend sitting right next to you on the couch. Player facts are grounded in verified match data, eliminating hallucinations.
->
-> **AI Architecture:**  
-> Built with Next.js App Router, Tailwind CSS, and TypeScript. A secured server route (`/api/explain`) streams responses using Claude 3.5 Haiku, safeguarded with IP rate limiting, input validation, and automatic offline fallbacks. Built using Antigravity.
-
----
-
-## 📋 8. Demo Round: Key Takeaways to Explain
-
-1. **Why this problem?** Riya (24) is watching IND vs AUS with friends. She wants to be part of the excitement without having to study rulebooks or miss balls looking up jargon.
-2. **Why AI?** Unlike a static Wikipedia bio, the AI answers in the context of *this exact ball, this run rate, and this chase*, in the user's preferred casual language.
-3. **Hardest decision:** Grounding player stats in curated facts in `data/match.ts` so the AI never hallucinates bogus numbers before reviewers.
-4. **Resilience & Failure handling:** In-memory rate limiting, 8-second timeout protection, offline saved fallbacks, and keeping keys exclusively on the server.
-5. **Future Roadmap:** Real-time websockets feed from sports data providers, multi-sport adaptation (cricket & football), and push voice explanations when DRS or wickets trigger.

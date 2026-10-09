@@ -103,7 +103,7 @@ export function MatchHeader({
           · RRR <span className="font-bold text-accent tabular-nums">{matchData.requiredRunRate}</span>
         </div>
 
-        {/* Prompt 9: "Just joined? Catch me up" button */}
+        {/* "Just joined? Catch me up" button */}
         <button
           type="button"
           onClick={onOpenStorySoFar}

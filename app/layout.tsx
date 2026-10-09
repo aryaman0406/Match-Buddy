@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Match Buddy — Live Cricket AI Companion",
     description:
-      "Your intelligent cricket companion for live matches. Built for the Dream11 FDE Intern assignment.",
+      "Your intelligent cricket companion for live matches. Instant, friendly explanations in English and Hinglish.",
   },
 };
 

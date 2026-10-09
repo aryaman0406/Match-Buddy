@@ -1,4 +1,4 @@
-# Match Buddy - Dream11 FDE Intern Assignment Rules
+# Match Buddy - Project Rules
 
 ## Product
 Match Buddy is an AI companion for casual fans watching a live cricket match. A casual fan taps a player to get a quick AI intro with why they matter right now, or taps an event or types a rule (free hit, DRS, LBW, DLS, super over) to get a two-line explanation tied to the current match situation. Works in English and Hinglish (Hindi written in Roman letters).

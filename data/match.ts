@@ -258,7 +258,7 @@ export const rulesDictionary: Record<string, { term: string; en: string; hinglis
   },
 };
 
-// Simulation sequence (Prompt 8)
+// Simulation sequence
 export const simulationSteps: SimulationStep[] = [
   {
     score: "112/3",

@@ -30,7 +30,7 @@ export default function Home() {
   const [strikerId, setStrikerId] = useState<string>("hardik-pandya");
   const [recentEventId, setRecentEventId] = useState<string | undefined>(undefined);
 
-  // Simulation controls (Prompt 8)
+  // Simulation controls
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [simulationIndex, setSimulationIndex] = useState<number>(0);
 
@@ -57,7 +57,7 @@ export default function Home() {
     setLanguage(newLang);
     localStorage.setItem("match-buddy-lang", newLang);
 
-    // If bottom sheet is currently open, re-request explanation in new language (Prompt 6)
+    // If bottom sheet is currently open, re-request explanation in new language
     if (isSheetOpen && sheetData) {
       triggerExplanation(sheetData, newLang);
     }
@@ -78,7 +78,7 @@ export default function Home() {
       setStreamedText("");
       setIsFallback(false);
 
-      // 8-second fallback timeout safeguard (Prompt 6 requirement)
+      // 8-second fallback timeout safeguard
       let receivedFirstToken = false;
       const timeoutId = setTimeout(() => {
         if (!receivedFirstToken && !controller.signal.aborted) {
@@ -253,7 +253,7 @@ export default function Home() {
     setIsSheetOpen(false);
   };
 
-  // Live match auto-simulation (Prompt 8: ticks every 6 seconds)
+  // Live match auto-simulation (ticks every 6 seconds)
   useEffect(() => {
     if (!isSimulating) return;
 
@@ -340,13 +340,12 @@ export default function Home() {
             recentEventId={recentEventId}
           />
 
-          {/* Assignment Footer Note (Prompt 7 requirement) */}
           <footer className="pt-6 pb-2 text-center border-t border-theme/60 text-text-muted space-y-1">
             <p className="text-[11px] font-medium">
-              Prototype built for the <span className="text-foreground font-semibold">Dream11 FDE Intern</span> assignment.
+              Built with ❤️ by <span className="text-foreground font-semibold">Match Buddy</span>
             </p>
             <p className="text-[10px] text-text-muted/80">
-              Match data is mocked. AI answers grounded in verified facts.
+              AI answers grounded in verified match facts.
             </p>
           </footer>
         </div>
