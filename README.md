@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Match Buddy 🏏
+> **AI Companion for Casual Fans Watching a Live Cricket Match**  
+> *Built for the Dream11 Forward Deployed Engineer (FDE) Intern Take-Home Assignment*
 
-## Getting Started
+---
 
-First, run the development server:
+## 📌 1. The Fan Problem
+Watching live cricket with friends can be intimidating for casual fans. When commentators say *"That was a free hit"* or *"Australia have taken a DRS review"*, or when a new bowler comes in, a casual fan like **Riya (24)** often feels lost. Googling mid-over causes her to miss the next ball, and asking friends repeatedly feels awkward. 
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Match Buddy** solves this by acting like a cricket-savvy friend sitting right next to you on the couch:
+- Tap any batter or bowler on field for an instant 3-line intro explaining **why they matter right now**.
+- Tap any match event or type any rule (e.g. *Free Hit*, *DRS*, *LBW*, *DLS*, *Super Over*) for a concise 2-line explanation tied directly to the live match situation.
+- Toggles effortlessly between simple **English** and **Hinglish** (Hindi in Roman script).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ✨ 2. Key Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Live Match Situation Header:**
+  - Pulsing red `LIVE` badge, teams (`IND vs AUS, 2nd T20I`), big score (`112/3`), overs progress bar (`14.2 / 20`), and real-time chase status (`Need 54 off 34 balls · RRR 9.5`).
+- **Interactive "On the Field" Roster:**
+  - Batting cards with live scores (Hardik Pandya `41* (28)`, Suryakumar Yadav `22* (14)`), striker indicator (`🏏*`), and bowler cards (Pat Cummins, Mitchell Starc).
+  - Tapping any player slides up an AI breakdown grounded in verified career highlights and match stakes.
+- **Moments Feed (Live Timeline):**
+  - Newest-first vertical timeline of crucial match events: No-ball & Free Hit, DRS LBW review, wickets, Powerplay conclusion, and Impact Player substitutions.
+  - One-tap **"Explain"** button on every event.
+- **Interactive Ask Bar:**
+  - Sticky at bottom with quick-query chips (`"What is DLS?"`, `"What is LBW?"`, `"What is a super over?"`) and open text search (max 200 chars).
+- **"Just Joined? Catch Me Up":**
+  - A 30-second 4-sentence innings summary for late joiners.
+- **Smart AI Bottom Sheet:**
+  - Smooth 250ms slide-up modal with drag handle, swipe-to-dismiss, backdrop click, Escape key listener, and focus trapping.
+  - Word-by-word streaming animation with shimmer skeleton loading.
+  - Dedicated **"Why it matters right now"** callout box with a purple left border (`#7C5CFF`).
+  - **Read Aloud (Voice)**: In-browser speech synthesis for audio commentary.
+  - **One-tap Copy** with toast feedback & **WhatsApp Share**.
+- **Live Match Auto-Simulation Mode:**
+  - Toggle live simulation with Play/Pause button: ticks score, overs, and bowler/batter figures every 6 seconds, dropping new events into the feed with a 3-second highlight fade.
+- **English & Hinglish Support:**
+  - Toggle anytime (`EN` / `हिंग`). If a card is open, switching languages instantly re-explains in the selected tongue.
+- **Dark & Light Mode:**
+  - Native dark mode default (`#0B0E14`) and clean light mode (`#F5F6F8`) with `localStorage` memory.
+- **Fail-safe Grounding & Offline Support:**
+  - Curated verified facts in `/data/match.ts`. If offline, rate-limited, or slow (>8s), the app serves grounded fallback text with an explanatory badge—the screen is never blank.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ 3. Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Framework:** [Next.js](https://nextjs.org/) (App Router, Turbopack, React 19)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS (Custom design tokens matching the design system specifications)
+- **Icons:** `lucide-react`
+- **AI Backend:** Server route `/app/api/explain` calling `@anthropic-ai/sdk` with streaming, rate limiting (20 req / 10 min), and sports query guardrails.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🔒 4. How the AI is Used & Grounded Facts Strategy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Grounded Facts Architecture:**  
+   LLMs can hallucinate player statistics or career numbers. To protect user trust, verified facts (birthplaces, roles, validated career achievements) are stored in `/data/match.ts`. The prompt instructs Claude to use **only** verified facts and provide the current situational interpretation.
+2. **Strict Guardrails:**  
+   - Maximum 200 characters per user query.
+   - Non-sports questions (e.g. homework requests) are politely declined.
+   - Rate limiting: In-memory tracker permits max 20 requests per IP per 10 minutes.
+   - Security: Anthropic API keys live strictly on the server (`process.env.ANTHROPIC_API_KEY`) and are never exposed to the client.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🚀 5. How to Run Locally
+
+### Prerequisites
+- Node.js `v18+` or `v20+` / `v22+`
+- npm
+
+### Steps
+1. **Clone the repository & install dependencies:**
+   ```bash
+   git clone <your-repo-url>
+   cd "Match Buddy"
+   npm install
+   ```
+
+2. **Configure Environment Variables (Optional):**
+   Copy `.env.example` to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Add your Anthropic API Key:
+   ```env
+   ANTHROPIC_API_KEY=sk-ant-api03-...
+   ANTHROPIC_MODEL=claude-3-5-haiku-20241022
+   ```
+   > *Note:* If you run without an API key, Match Buddy will automatically use its built-in verified fallback streaming engine so reviewers can test the entire UI and experience without requiring their own API balance!
+
+3. **Start the local development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) on your desktop browser or mobile emulator.
+
+4. **Verify production build:**
+   ```bash
+   npm run build
+   ```
+
+---
+
+## 🌐 6. Vercel Deployment Instructions
+
+1. **Push your code to GitHub:**
+   ```bash
+   git add .
+   git commit -m "feat: complete Match Buddy live cricket AI companion"
+   git remote add origin https://github.com/<your-username>/match-buddy.git
+   git push -u origin main
+   ```
+2. **Import into Vercel:**
+   - Go to [vercel.com](https://vercel.com) and log in.
+   - Click **"Add New..."** → **"Project"**.
+   - Select your `match-buddy` GitHub repository.
+3. **Set Environment Variables in Vercel:**
+   - Under **Environment Variables**, add:
+     - `ANTHROPIC_API_KEY`: your Anthropic API key
+     - `ANTHROPIC_MODEL`: `claude-3-5-haiku-20241022`
+4. **Deploy:**
+   - Click **Deploy**. Vercel will build and deploy the app to a production URL (e.g., `https://match-buddy-xxx.vercel.app`).
+   - Test on your mobile phone over mobile data!
+
+---
+
+## 📝 7. 200-Word Note for Dream11 Assignment Submission
+
+> **Fan Problem:**  
+> When watching cricket with passionate friends, casual fans frequently miss out on the excitement because cricket terminology and rapid match tactics feel like an exclusive club. Mid-over googling causes them to miss the very next delivery, and asking friends repeatedly feels awkward.
+>
+> **How Match Buddy Solves It:**  
+> Match Buddy is a live cricket companion crafted for casual fans. Tapping any player immediately delivers a 3-sentence intro explaining who they are and why their current innings matters right now. Tapping any event or typing any unfamiliar rule (from Free Hits to DLS) returns an instant 2-sentence breakdown linked to the live match state. It seamlessly switches between conversational English and Romanized Hinglish, sounding like a knowledgeable friend sitting right next to you on the couch. Player facts are grounded in verified match data, eliminating hallucinations.
+>
+> **AI Architecture:**  
+> Built with Next.js App Router, Tailwind CSS, and TypeScript. A secured server route (`/api/explain`) streams responses using Claude 3.5 Haiku, safeguarded with IP rate limiting, input validation, and automatic offline fallbacks. Built using Antigravity.
+
+---
+
+## 📋 8. Demo Round: Key Takeaways to Explain
+
+1. **Why this problem?** Riya (24) is watching IND vs AUS with friends. She wants to be part of the excitement without having to study rulebooks or miss balls looking up jargon.
+2. **Why AI?** Unlike a static Wikipedia bio, the AI answers in the context of *this exact ball, this run rate, and this chase*, in the user's preferred casual language.
+3. **Hardest decision:** Grounding player stats in curated facts in `data/match.ts` so the AI never hallucinates bogus numbers before reviewers.
+4. **Resilience & Failure handling:** In-memory rate limiting, 8-second timeout protection, offline saved fallbacks, and keeping keys exclusively on the server.
+5. **Future Roadmap:** Real-time websockets feed from sports data providers, multi-sport adaptation (cricket & football), and push voice explanations when DRS or wickets trigger.
