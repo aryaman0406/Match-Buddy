@@ -2,48 +2,80 @@
 
 import React from "react";
 import { ThemeToggle } from "./ThemeToggle";
+import { Sparkles, Key } from "lucide-react";
 
 interface TopBarProps {
   language: "en" | "hinglish";
   onLanguageChange: (lang: "en" | "hinglish") => void;
+  hasGeminiKey: boolean;
+  onOpenApiKeyModal: () => void;
+  currentSportIcon?: string;
 }
 
-export function TopBar({ language, onLanguageChange }: TopBarProps) {
+export function TopBar({
+  language,
+  onLanguageChange,
+  hasGeminiKey,
+  onOpenApiKeyModal,
+  currentSportIcon = "🏏",
+}: TopBarProps) {
   return (
-    <header className="w-full flex items-center justify-between py-3.5 px-4 border-b border-theme bg-surface/90 backdrop-blur-md sticky top-0 z-30 transition-colors">
+    <header className="w-full flex items-center justify-between py-3 px-3.5 border-b border-theme bg-surface/90 backdrop-blur-md sticky top-0 z-30 transition-colors">
       {/* Brand logo & icon */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent to-accent-ai/80 flex items-center justify-center shadow-sm text-lg select-none ring-1 ring-white/10">
-          🏏
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-accent to-accent-ai/80 flex items-center justify-center shadow-sm text-base select-none ring-1 ring-white/10 shrink-0">
+          {currentSportIcon}
         </div>
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="font-extrabold text-base tracking-tight text-foreground">
+            <span className="font-extrabold text-sm tracking-tight text-foreground">
               Match Buddy
             </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent-ai/15 text-accent-ai border border-accent-ai/30 uppercase tracking-wider">
+            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-accent-ai/15 text-accent-ai border border-accent-ai/30 uppercase tracking-wider">
               AI
             </span>
           </div>
-          <p className="text-[11px] text-text-muted hidden xs:block font-medium">
-            Your live cricket couch buddy
+          <p className="text-[10px] text-text-muted hidden xs:block font-medium">
+            Live sports companion for casual fans
           </p>
         </div>
       </div>
 
-      {/* Action buttons: Language toggle & Theme toggle */}
-      <div className="flex items-center gap-2.5">
+      {/* Action buttons: Gemini Key pill, Language toggle, Theme toggle */}
+      <div className="flex items-center gap-2">
+        {/* Gemini API Key Button */}
+        <button
+          type="button"
+          onClick={onOpenApiKeyModal}
+          title="Configure Google Gemini API Key"
+          className={`flex items-center gap-1 px-2.5 py-1 min-h-[32px] rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+            hasGeminiKey
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+              : "bg-surface-raised border-theme text-text-muted hover:text-foreground hover:border-accent-ai/40"
+          }`}
+        >
+          <Key className="w-3 h-3 text-accent-ai" />
+          <span className="hidden sm:inline">
+            {hasGeminiKey ? "Gemini ⚡" : "Gemini Key"}
+          </span>
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              hasGeminiKey ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+            }`}
+          />
+        </button>
+
         {/* Language selector pill */}
         <div
           role="group"
           aria-label="Language selection"
-          className="bg-surface-raised border border-theme p-1 rounded-xl flex items-center shadow-inner"
+          className="bg-surface-raised border border-theme p-0.5 rounded-xl flex items-center shadow-inner"
         >
           <button
             type="button"
             onClick={() => onLanguageChange("en")}
             aria-pressed={language === "en"}
-            className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+            className={`px-2.5 py-1 min-h-[32px] rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
               language === "en"
                 ? "bg-accent-ai text-white shadow-sm"
                 : "text-text-muted hover:text-foreground"
@@ -55,7 +87,7 @@ export function TopBar({ language, onLanguageChange }: TopBarProps) {
             type="button"
             onClick={() => onLanguageChange("hinglish")}
             aria-pressed={language === "hinglish"}
-            className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+            className={`px-2.5 py-1 min-h-[32px] rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
               language === "hinglish"
                 ? "bg-accent-ai text-white shadow-sm"
                 : "text-text-muted hover:text-foreground"

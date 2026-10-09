@@ -6,16 +6,17 @@ import { Send, HelpCircle, Sparkles } from "lucide-react";
 interface AskBarProps {
   onAskQuestion: (query: string) => void;
   isLoading: boolean;
+  quickChips?: string[] | readonly string[];
+  placeholder?: string;
 }
 
-export function AskBar({ onAskQuestion, isLoading }: AskBarProps) {
+export function AskBar({
+  onAskQuestion,
+  isLoading,
+  quickChips = ["What is DLS?", "What is LBW?", "What is a super over?"],
+  placeholder = "Confused by a rule or player? Ask me",
+}: AskBarProps) {
   const [query, setQuery] = useState("");
-
-  const quickChips = [
-    "What is DLS?",
-    "What is LBW?",
-    "What is a super over?",
-  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,11 +63,11 @@ export function AskBar({ onAskQuestion, isLoading }: AskBarProps) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Confused by a rule? Ask me"
-              maxLength={200}
+              placeholder={placeholder}
+              maxLength={300}
               disabled={isLoading}
-              className="w-full h-11 min-h-[44px] pl-9 pr-3 rounded-xl bg-surface-raised border border-theme text-foreground placeholder:text-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-accent-ai transition-colors"
-              aria-label="Ask any cricket rule or match question"
+              className="w-full h-11 min-h-[44px] pl-9 pr-3 rounded-xl bg-surface-raised border border-theme text-foreground placeholder:text-text-muted text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent-ai transition-colors"
+              aria-label="Ask any sports rule or match question"
               id="ask-rule-input"
             />
           </div>

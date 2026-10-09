@@ -50,19 +50,19 @@ Watching live cricket with friends can be intimidating for casual fans. When com
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS (Custom design tokens matching the design system specifications)
 - **Icons:** `lucide-react`
-- **AI Backend:** Server route `/app/api/explain` calling `@anthropic-ai/sdk` with streaming, rate limiting (20 req / 10 min), and sports query guardrails.
+- **AI Backend:** Server route `/app/api/explain` calling `@google/generative-ai` (Gemini) with streaming, rate limiting (20 req / 10 min), and sports query guardrails.
 
 ---
 
 ## 🔒 4. How the AI is Used & Grounded Facts Strategy
 
 1. **Grounded Facts Architecture:**  
-   LLMs can hallucinate player statistics or career numbers. To protect user trust, verified facts (birthplaces, roles, validated career achievements) are stored in `/data/match.ts`. The prompt instructs Claude to use **only** verified facts and provide the current situational interpretation.
+   LLMs can hallucinate player statistics or career numbers. To protect user trust, verified facts (birthplaces, roles, validated career achievements) are stored in `/data/match.ts`. The prompt instructs Gemini to use **only** verified facts and provide the current situational interpretation.
 2. **Strict Guardrails:**  
    - Maximum 200 characters per user query.
    - Non-sports questions (e.g. homework requests) are politely declined.
    - Rate limiting: In-memory tracker permits max 20 requests per IP per 10 minutes.
-   - Security: Anthropic API keys live strictly on the server (`process.env.ANTHROPIC_API_KEY`) and are never exposed to the client.
+   - Security: Gemini API keys live strictly on the server (`process.env.GEMINI_API_KEY`) and are never exposed to the client.
 
 ---
 
@@ -85,10 +85,10 @@ Watching live cricket with friends can be intimidating for casual fans. When com
    ```bash
    cp .env.example .env.local
    ```
-   Add your Anthropic API Key:
+   Add your Gemini API Key (get one free at [aistudio.google.com](https://aistudio.google.com/apikey)):
    ```env
-   ANTHROPIC_API_KEY=sk-ant-api03-...
-   ANTHROPIC_MODEL=claude-3-5-haiku-20241022
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-2.0-flash
    ```
    > *Note:* If you run without an API key, Match Buddy will automatically use its built-in verified fallback streaming engine so you can test the entire UI and experience without needing your own API balance!
 
@@ -120,8 +120,8 @@ Watching live cricket with friends can be intimidating for casual fans. When com
    - Select your `match-buddy` GitHub repository.
 3. **Set Environment Variables in Vercel:**
    - Under **Environment Variables**, add:
-     - `ANTHROPIC_API_KEY`: your Anthropic API key
-     - `ANTHROPIC_MODEL`: `claude-3-5-haiku-20241022`
+     - `GEMINI_API_KEY`: your Google Gemini API key
+     - `GEMINI_MODEL`: `gemini-2.0-flash`
 4. **Deploy:**
    - Click **Deploy**. Vercel will build and deploy the app to a production URL (e.g., `https://match-buddy-xxx.vercel.app`).
    - Test on your mobile phone over mobile data!

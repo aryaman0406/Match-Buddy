@@ -1,11 +1,21 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Play, Pause, Radio } from "lucide-react";
+import { Sparkles, Play, Pause } from "lucide-react";
 import { MatchSituation } from "@/data/match";
 
 interface MatchHeaderProps {
-  matchData: MatchSituation;
+  matchData?: MatchSituation;
+  scoreDisplay?: {
+    primary: string;
+    primaryLabel: string;
+    progress: string;
+    progressPercent: number;
+    secondaryStatus: string;
+  };
+  sportName?: string;
+  seriesOrLeague?: string;
+  teams?: [string, string];
   onOpenStorySoFar: () => void;
   isSimulating: boolean;
   onToggleSimulation: () => void;
@@ -13,16 +23,34 @@ interface MatchHeaderProps {
 
 export function MatchHeader({
   matchData,
+  scoreDisplay,
+  sportName = "Cricket",
+  seriesOrLeague,
+  teams,
   onOpenStorySoFar,
   isSimulating,
   onToggleSimulation,
 }: MatchHeaderProps) {
-  // Calculate progress of overs (e.g. 14.2 overs out of 20)
-  const currentOverFloat = parseFloat(matchData.overs);
-  const progressPercent = Math.min(
-    100,
-    Math.max(0, (currentOverFloat / matchData.totalOvers) * 100)
-  );
+  // Compute display values
+  const activeTeams = teams || matchData?.teams || ["IND", "AUS"];
+  const activeLeague = seriesOrLeague || matchData?.series || "Live Match";
+
+  const primaryScore = scoreDisplay?.primary || matchData?.score || "112/3";
+  const primaryLabel = scoreDisplay?.primaryLabel || activeTeams[0];
+  const progressLabel = scoreDisplay?.progress || `${matchData?.overs || "14.2"} / ${matchData?.totalOvers || 20} Overs`;
+  const secondaryStatus =
+    scoreDisplay?.secondaryStatus ||
+    (matchData
+      ? `Need ${matchData.runsNeeded} off ${matchData.ballsLeft} balls · RRR ${matchData.requiredRunRate}`
+      : "Live match in progress");
+
+  let progressPercent = 70;
+  if (scoreDisplay) {
+    progressPercent = scoreDisplay.progressPercent;
+  } else if (matchData) {
+    const currentOverFloat = parseFloat(matchData.overs);
+    progressPercent = Math.min(100, Math.max(0, (currentOverFloat / matchData.totalOvers) * 100));
+  }
 
   return (
     <section className="w-full bg-surface border border-theme rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 transition-all">
@@ -35,8 +63,8 @@ export function MatchHeader({
             <span>LIVE</span>
           </div>
 
-          <span className="text-xs font-semibold text-text-muted">
-            {matchData.teams[0]} vs {matchData.teams[1]} · {matchData.series}
+          <span className="text-xs font-semibold text-text-muted truncate max-w-[190px] xs:max-w-none">
+            {activeTeams[0]} vs {activeTeams[1]} · {activeLeague}
           </span>
         </div>
 
@@ -66,28 +94,28 @@ export function MatchHeader({
         </button>
       </div>
 
-      {/* Score and Overs row */}
-      <div className="flex items-baseline justify-between">
+      {/* Score and Progress row */}
+      <div className="flex items-baseline justify-between gap-2">
         <div className="flex items-baseline gap-2">
-          <span className="text-[40px] leading-none font-extrabold tracking-tight tabular-nums text-foreground">
-            {matchData.score}
+          <span className="text-[34px] xs:text-[40px] leading-none font-extrabold tracking-tight tabular-nums text-foreground">
+            {primaryScore}
           </span>
           <span className="text-sm font-semibold text-text-muted">
-            {matchData.teams[0]}
+            {primaryLabel}
           </span>
         </div>
 
-        <div className="text-right">
-          <span className="text-sm font-medium text-text-muted block">
-            Overs
+        <div className="text-right shrink-0">
+          <span className="text-xs font-medium text-text-muted block">
+            {sportName} Progress
           </span>
-          <span className="text-base font-bold tabular-nums text-foreground">
-            {matchData.overs} / {matchData.totalOvers}
+          <span className="text-sm xs:text-base font-bold tabular-nums text-foreground">
+            {progressLabel}
           </span>
         </div>
       </div>
 
-      {/* Overs Progress Bar */}
+      {/* Progress Bar */}
       <div className="w-full bg-surface-raised h-1.5 rounded-full overflow-hidden border border-theme/60">
         <div
           className="h-full bg-gradient-to-r from-accent to-accent-ai transition-all duration-500 ease-out"
@@ -95,12 +123,10 @@ export function MatchHeader({
         />
       </div>
 
-      {/* Chase status line & Catch me up button */}
+      {/* Status line & Catch me up button */}
       <div className="pt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-theme/60">
         <div className="text-xs sm:text-sm font-medium text-text-muted">
-          Need <span className="font-bold text-foreground tabular-nums">{matchData.runsNeeded}</span> off{" "}
-          <span className="font-bold text-foreground tabular-nums">{matchData.ballsLeft} balls</span>{" "}
-          · RRR <span className="font-bold text-accent tabular-nums">{matchData.requiredRunRate}</span>
+          {secondaryStatus}
         </div>
 
         {/* "Just joined? Catch me up" button */}

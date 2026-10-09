@@ -7,12 +7,14 @@ import { OnField } from "@/components/OnField";
 import { MomentsFeed } from "@/components/MomentsFeed";
 import { AskBar } from "@/components/AskBar";
 import { BottomSheet, BottomSheetData } from "@/components/BottomSheet";
+import { SportSelector } from "@/components/SportSelector";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
+import { CustomMatchModal } from "@/components/CustomMatchModal";
+import { allSportsMatches, SportMatchConfig } from "@/data/sportsData";
 import {
   match as initialMatchData,
   players as initialPlayers,
   initialEvents,
-  storyFallback,
-  rulesDictionary,
   simulationSteps,
   Player,
   MatchEvent,
@@ -23,10 +25,21 @@ export default function Home() {
   // Language state (persisted in localStorage)
   const [language, setLanguage] = useState<"en" | "hinglish">("en");
 
-  // Dynamic match state (for live match simulation)
+  // Gemini API Key state (persisted in localStorage)
+  const [geminiKey, setGeminiKey] = useState<string>("");
+  const [geminiModel, setGeminiModel] = useState<string>("gemini-2.0-flash");
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState<boolean>(false);
+
+  // Active Sport & Match state
+  const [currentMatch, setCurrentMatch] = useState<SportMatchConfig>(allSportsMatches[0]);
+  const [customMatches, setCustomMatches] = useState<SportMatchConfig[]>([]);
+  const [isCustomMatchModalOpen, setIsCustomMatchModalOpen] = useState<boolean>(false);
+
+  // Live match state
   const [matchData, setMatchData] = useState<MatchSituation>(initialMatchData);
-  const [playersList, setPlayersList] = useState<Player[]>(initialPlayers);
-  const [eventsList, setEventsList] = useState<MatchEvent[]>(initialEvents);
+  const [scoreDisplay, setScoreDisplay] = useState(allSportsMatches[0].scoreDisplay);
+  const [playersList, setPlayersList] = useState<Player[]>(allSportsMatches[0].players);
+  const [eventsList, setEventsList] = useState<MatchEvent[]>(allSportsMatches[0].events);
   const [strikerId, setStrikerId] = useState<string>("hardik-pandya");
   const [recentEventId, setRecentEventId] = useState<string | undefined>(undefined);
 
@@ -44,29 +57,133 @@ export default function Home() {
   // In-flight request controller
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Load saved language on mount
+  // Load saved language, Gemini key, and custom matches on mount
   useEffect(() => {
     const savedLang = localStorage.getItem("match-buddy-lang") as "en" | "hinglish" | null;
-    if (savedLang) {
-      setLanguage(savedLang);
+    if (savedLang) setLanguage(savedLang);
+
+    const savedKey = localStorage.getItem("match-buddy-gemini-key") || "";
+    if (savedKey) setGeminiKey(savedKey);
+
+    const savedModel = localStorage.getItem("match-buddy-gemini-model") || "gemini-2.0-flash";
+    setGeminiModel(savedModel);
+
+    try {
+      const savedCustom = localStorage.getItem("match-buddy-custom-matches");
+      if (savedCustom) {
+        setCustomMatches(JSON.parse(savedCustom));
+      }
+    } catch {
+      // Ignore parse error
     }
   }, []);
+
+  // Save Gemini Key handler
+  const handleSaveGeminiKey = (key: string, model: string) => {
+    setGeminiKey(key);
+    setGeminiModel(model);
+    localStorage.setItem("match-buddy-gemini-key", key);
+    localStorage.setItem("match-buddy-gemini-model", model);
+  };
+
+  const handleClearGeminiKey = () => {
+    setGeminiKey("");
+    localStorage.removeItem("match-buddy-gemini-key");
+  };
 
   // Language toggle handler
   const handleLanguageChange = (newLang: "en" | "hinglish") => {
     setLanguage(newLang);
     localStorage.setItem("match-buddy-lang", newLang);
 
-    // If bottom sheet is currently open, re-request explanation in new language
     if (isSheetOpen && sheetData) {
-      triggerExplanation(sheetData, newLang);
+      triggerExplanation(sheetData, newLang, currentMatch);
     }
   };
 
-  // Helper to fetch and stream AI explanation
+  // Switch sport / match handler
+  const handleSelectMatch = (selected: SportMatchConfig) => {
+    setIsSimulating(false);
+    setCurrentMatch(selected);
+    setScoreDisplay(selected.scoreDisplay);
+    setPlayersList(selected.players);
+    setEventsList(selected.events);
+    setStrikerId(selected.players[0]?.id || "");
+
+    // If cricket, sync cricket matchData
+    if (selected.sportId === "cricket") {
+      setMatchData(initialMatchData);
+    }
+  };
+
+  // Create custom match handler
+  const handleCreateCustomMatch = (newMatch: SportMatchConfig) => {
+    const updated = [newMatch, ...customMatches];
+    setCustomMatches(updated);
+    try {
+      localStorage.setItem("match-buddy-custom-matches", JSON.stringify(updated));
+    } catch {
+      // ignore storage error
+    }
+    handleSelectMatch(newMatch);
+  };
+
+  // Fallback text provider using grounded data in active match config
+  const provideFallback = (
+    data: BottomSheetData,
+    targetLang: "en" | "hinglish",
+    activeMatch: SportMatchConfig
+  ) => {
+    let fallback = "";
+
+    if (data.kind === "player" && data.id) {
+      const p = activeMatch.players.find((player) => player.id === data.id);
+      if (p) {
+        fallback = p.fallbackIntro[targetLang];
+      } else {
+        fallback =
+          targetLang === "hinglish"
+            ? `${data.title} ${activeMatch.sportName} ke match me key role play kar rahe hain.`
+            : `${data.title} is playing a crucial role in this ${activeMatch.sportName} clash.`;
+      }
+    } else if (data.kind === "event" && data.id) {
+      const e = activeMatch.events.find((evt) => evt.id === data.id);
+      if (e) {
+        fallback = e.fallbackExplain[targetLang];
+      } else {
+        fallback =
+          targetLang === "hinglish"
+            ? `${data.title} is match ka key moment hai jo match momentum ko direct effect karta hai.`
+            : `${data.title} is a key match moment dictating current momentum.`;
+      }
+    } else if (data.kind === "story") {
+      fallback = activeMatch.storyFallback[targetLang];
+    } else if (data.kind === "question" && data.queryText) {
+      const q = data.queryText.toLowerCase();
+      for (const [key, val] of Object.entries(activeMatch.rulesDictionary)) {
+        if (q.includes(key)) {
+          fallback = val[targetLang];
+          break;
+        }
+      }
+      if (!fallback) {
+        fallback =
+          targetLang === "hinglish"
+            ? `Yeh ${activeMatch.sportName} ka ek important concept hai. Match Buddy AI se aap kisi bhi rule ya player ke baare me pooch sakte hain!`
+            : `This is a key tactical concept in ${activeMatch.sportName}. Feel free to ask Match Buddy about any player, team, or rule!`;
+      }
+    }
+
+    setStreamedText(fallback);
+  };
+
+  // Trigger AI explanation
   const triggerExplanation = useCallback(
-    async (data: BottomSheetData, targetLang: "en" | "hinglish") => {
-      // Cancel existing in-flight request if any
+    async (
+      data: BottomSheetData,
+      targetLang: "en" | "hinglish",
+      activeMatch: SportMatchConfig = currentMatch
+    ) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -78,26 +195,56 @@ export default function Home() {
       setStreamedText("");
       setIsFallback(false);
 
-      // 8-second fallback timeout safeguard
       let receivedFirstToken = false;
       const timeoutId = setTimeout(() => {
         if (!receivedFirstToken && !controller.signal.aborted) {
           console.warn("AI response exceeded 8s threshold; engaging grounded fallback.");
           setIsFallback(true);
-          provideFallback(data, targetLang);
+          provideFallback(data, targetLang, activeMatch);
         }
       }, 8000);
 
       try {
+        const matchSummary = `${activeMatch.teamFullNames.join(" vs ")} (${activeMatch.seriesOrLeague}). Score: ${scoreDisplay.primary} (${scoreDisplay.progress}). ${scoreDisplay.secondaryStatus}`;
+
+        // Find associated player or event object for rich context
+        const selectedPlayer = activeMatch.players.find((p) => p.id === data.id);
+        const selectedEvent = activeMatch.events.find((e) => e.id === data.id);
+
         const response = await fetch("/api/explain", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(geminiKey ? { "x-gemini-key": geminiKey, "x-gemini-model": geminiModel } : {}),
+          },
           body: JSON.stringify({
             kind: data.kind,
             id: data.id,
             text: data.queryText,
             language: targetLang,
-            matchState: matchData,
+            sport: activeMatch.sportName,
+            matchState: matchSummary,
+            geminiApiKey: geminiKey,
+            geminiModel: geminiModel,
+            playerData: selectedPlayer
+              ? {
+                  name: selectedPlayer.name,
+                  role: selectedPlayer.role,
+                  onField: selectedPlayer.onField,
+                  country: selectedPlayer.country,
+                  team: selectedPlayer.country,
+                  keyFacts: selectedPlayer.keyFacts,
+                  fallbackIntro: selectedPlayer.fallbackIntro,
+                }
+              : undefined,
+            eventData: selectedEvent
+              ? {
+                  title: selectedEvent.title,
+                  term: selectedEvent.term,
+                  over: selectedEvent.over,
+                  fallbackExplain: selectedEvent.fallbackExplain,
+                }
+              : undefined,
           }),
           signal: controller.signal,
         });
@@ -129,61 +276,29 @@ export default function Home() {
         }
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === "AbortError") {
-          // Request intentionally cancelled, do nothing
           return;
         }
         console.warn("AI request error, showing fallback:", err);
         setIsFallback(true);
-        provideFallback(data, targetLang);
+        provideFallback(data, targetLang, activeMatch);
       } finally {
         clearTimeout(timeoutId);
         setIsLoading(false);
       }
     },
-    [matchData]
+    [currentMatch, geminiKey, geminiModel, scoreDisplay]
   );
-
-  // Fallback text provider using grounded data in data/match.ts
-  const provideFallback = (data: BottomSheetData, targetLang: "en" | "hinglish") => {
-    let fallback = "";
-
-    if (data.kind === "player" && data.id) {
-      const p = playersList.find((player) => player.id === data.id);
-      if (p) fallback = p.fallbackIntro[targetLang];
-    } else if (data.kind === "event" && data.id) {
-      const e = eventsList.find((evt) => evt.id === data.id);
-      if (e) fallback = e.fallbackExplain[targetLang];
-    } else if (data.kind === "story") {
-      fallback = storyFallback[targetLang];
-    } else if (data.kind === "question" && data.queryText) {
-      const q = data.queryText.toLowerCase();
-      for (const [key, val] of Object.entries(rulesDictionary)) {
-        if (q.includes(key)) {
-          fallback = val[targetLang];
-          break;
-        }
-      }
-      if (!fallback) {
-        fallback =
-          targetLang === "hinglish"
-            ? "Network me dikkat lag rahi hai ya AI available nahi hai. Aap Match Buddy se cricket ke anya rules puch sakte hain!"
-            : "We couldn't connect to the AI right now. Please check your connection or try another cricket question.";
-      }
-    }
-
-    setStreamedText(fallback);
-  };
 
   // Open Sheet handlers
   const handleSelectPlayer = (player: Player) => {
     const whyItMatters =
       language === "hinglish"
-        ? `Currently batting at ${player.onField} with India needing ${matchData.runsNeeded} from ${matchData.ballsLeft} balls. Unka control game decide karega.`
-        : `Currently at ${player.onField} with India requiring ${matchData.runsNeeded} off ${matchData.ballsLeft} balls. This battle dictates the outcome.`;
+        ? `${player.name} (${player.onField}) ki presence match ke is point par sabse crucial hai.`
+        : `${player.name} (${player.onField}) holds the key to this match situation right now.`;
 
     const data: BottomSheetData = {
       title: `${player.name} (${player.role})`,
-      subtitle: `${player.country} · Formats: ${player.formats.join(", ")}`,
+      subtitle: `${player.country} · ${currentMatch.sportName}`,
       kind: "player",
       id: player.id,
       whyItMatters,
@@ -191,18 +306,18 @@ export default function Home() {
 
     setSheetData(data);
     setIsSheetOpen(true);
-    triggerExplanation(data, language);
+    triggerExplanation(data, language, currentMatch);
   };
 
   const handleExplainEvent = (event: MatchEvent) => {
     const whyItMatters =
       language === "hinglish"
-        ? `Over ${event.over} me ${event.term} hua jisse match ka momentum seedha shift ho gaya.`
-        : `Occurred in over ${event.over}, shifting momentum and run-rate demands immediately.`;
+        ? `${event.title} (${event.term}) ne match ke balance ko seedha badla hai.`
+        : `${event.title} (${event.term}) shifted the strategic momentum of the game.`;
 
     const data: BottomSheetData = {
       title: event.title,
-      subtitle: `Over ${event.over} · Rule: ${event.term}`,
+      subtitle: `${event.over} · Rule: ${event.term}`,
       kind: "event",
       id: event.id,
       whyItMatters,
@@ -210,40 +325,40 @@ export default function Home() {
 
     setSheetData(data);
     setIsSheetOpen(true);
-    triggerExplanation(data, language);
+    triggerExplanation(data, language, currentMatch);
   };
 
   const handleAskQuestion = (queryText: string) => {
     const data: BottomSheetData = {
-      title: `Rule: "${queryText}"`,
-      subtitle: "Match Buddy Rule Breakdown",
+      title: `"${queryText}"`,
+      subtitle: `${currentMatch.sportName} Companion Breakdown`,
       kind: "question",
       queryText,
       whyItMatters:
         language === "hinglish"
-          ? "Yeh cricket rule fielders aur batting team dono ke plans ko direct effect karta hai."
-          : "Understanding this rule reveals the tactical choices made by captains and fielders.",
+          ? "Iss sports rule ya sawaal ka seedha asar team ki strategy par padta hai."
+          : "Understanding this concept unlocks the decisions made by players and coaches.",
     };
 
     setSheetData(data);
     setIsSheetOpen(true);
-    triggerExplanation(data, language);
+    triggerExplanation(data, language, currentMatch);
   };
 
   const handleOpenStorySoFar = () => {
     const data: BottomSheetData = {
-      title: "Story of the Match So Far",
-      subtitle: "30-Second Innings Summary",
+      title: `Story of ${currentMatch.matchTitle} So Far`,
+      subtitle: `${currentMatch.sportName} Match Summary`,
       kind: "story",
       whyItMatters:
         language === "hinglish"
-          ? "India ko bas 34 balls me 54 runs chahiye aur required rate 9.5 ka hai."
-          : "India are in prime striking distance needing 54 runs from 34 balls.",
+          ? `Current score: ${scoreDisplay.primary}. ${scoreDisplay.secondaryStatus}`
+          : `Current situation: ${scoreDisplay.primary}. ${scoreDisplay.secondaryStatus}`,
     };
 
     setSheetData(data);
     setIsSheetOpen(true);
-    triggerExplanation(data, language);
+    triggerExplanation(data, language, currentMatch);
   };
 
   const handleCloseSheet = () => {
@@ -253,16 +368,15 @@ export default function Home() {
     setIsSheetOpen(false);
   };
 
-  // Live match auto-simulation (ticks every 6 seconds)
+  // Live match auto-simulation (ticks every 6s for cricket demo)
   useEffect(() => {
-    if (!isSimulating) return;
+    if (!isSimulating || currentMatch.sportId !== "cricket") return;
 
     const interval = setInterval(() => {
       setSimulationIndex((prevIndex) => {
         const nextIndex = (prevIndex + 1) % simulationSteps.length;
         const step = simulationSteps[nextIndex];
 
-        // Update match situation
         setMatchData((prev) => ({
           ...prev,
           score: step.score,
@@ -272,9 +386,16 @@ export default function Home() {
           requiredRunRate: step.requiredRunRate,
         }));
 
+        setScoreDisplay({
+          primary: step.score,
+          primaryLabel: "IND",
+          progress: `${step.overs} / 20 Overs`,
+          progressPercent: Math.min(100, (parseFloat(step.overs) / 20) * 100),
+          secondaryStatus: `Need ${step.runsNeeded} off ${step.ballsLeft} balls · RRR ${step.requiredRunRate}`,
+        });
+
         setStrikerId(step.strikerId);
 
-        // Update player card figures
         setPlayersList((prev) =>
           prev.map((player) => {
             if (step.batterScores[player.id]) {
@@ -287,7 +408,6 @@ export default function Home() {
           })
         );
 
-        // Insert new event if step triggers one
         if (step.newEvent) {
           const newEvt = step.newEvent;
           setRecentEventId(newEvt.id);
@@ -296,7 +416,6 @@ export default function Home() {
             return [newEvt, ...prev];
           });
 
-          // Clear highlight fade after 3 seconds
           setTimeout(() => {
             setRecentEventId(undefined);
           }, 3000);
@@ -307,30 +426,51 @@ export default function Home() {
     }, 6000);
 
     return () => clearInterval(interval);
-  }, [isSimulating]);
+  }, [isSimulating, currentMatch]);
 
   return (
     <div className="w-full flex justify-center bg-background min-h-screen text-foreground">
-      {/* Centred mobile-first container (max-width 480px on desktop) */}
-      <main className="w-full max-w-[480px] min-h-screen flex flex-col bg-background relative border-x border-theme/40 pb-32">
-        {/* TopBar with branding, language pill, and theme toggle */}
-        <TopBar language={language} onLanguageChange={handleLanguageChange} />
+      {/* Mobile-first container (max-width 480px on desktop) */}
+      <main className="w-full max-w-[480px] min-h-screen flex flex-col bg-background relative border-x border-theme/40 pb-36">
+        {/* TopBar with branding, Gemini Key button, language toggle, and theme */}
+        <TopBar
+          language={language}
+          onLanguageChange={handleLanguageChange}
+          hasGeminiKey={Boolean(geminiKey)}
+          onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
+          currentSportIcon={currentMatch.sportIcon}
+        />
+
+        {/* Multi-Sport Selector Bar */}
+        <div className="px-3 pt-2.5">
+          <SportSelector
+            currentMatchId={currentMatch.id}
+            onSelectMatch={handleSelectMatch}
+            onOpenCustomMatch={() => setIsCustomMatchModalOpen(true)}
+            customMatches={customMatches}
+          />
+        </div>
 
         {/* Main Content Area */}
-        <div className="p-4 space-y-5">
+        <div className="p-3.5 sm:p-4 space-y-4">
           {/* Live Match Card */}
           <MatchHeader
             matchData={matchData}
+            scoreDisplay={scoreDisplay}
+            sportName={currentMatch.sportName}
+            seriesOrLeague={currentMatch.seriesOrLeague}
+            teams={currentMatch.teams}
             onOpenStorySoFar={handleOpenStorySoFar}
             isSimulating={isSimulating}
             onToggleSimulation={() => setIsSimulating((prev) => !prev)}
           />
 
-          {/* On-Field Players (Batting & Bowling) */}
+          {/* On-Field Players for the active sport */}
           <OnField
             players={playersList}
             strikerId={strikerId}
             onSelectPlayer={handleSelectPlayer}
+            sportName={currentMatch.sportName}
           />
 
           {/* Match Moments Timeline */}
@@ -342,18 +482,23 @@ export default function Home() {
 
           <footer className="pt-6 pb-2 text-center border-t border-theme/60 text-text-muted space-y-1">
             <p className="text-[11px] font-medium">
-              Built with ❤️ by <span className="text-foreground font-semibold">Match Buddy</span>
+              Powered by <span className="text-foreground font-semibold">Google Gemini AI</span> &amp; Match Buddy
             </p>
             <p className="text-[10px] text-text-muted/80">
-              AI answers grounded in verified match facts.
+              Works for any sport, any team, and casual fan explanations.
             </p>
           </footer>
         </div>
 
         {/* Sticky AskBar at Bottom */}
-        <AskBar onAskQuestion={handleAskQuestion} isLoading={isLoading} />
+        <AskBar
+          onAskQuestion={handleAskQuestion}
+          isLoading={isLoading}
+          quickChips={currentMatch.quickQuestions}
+          placeholder={`Ask about ${currentMatch.sportName}, ${currentMatch.teamFullNames[0]} vs ${currentMatch.teamFullNames[1]}...`}
+        />
 
-        {/* Reusable BottomSheet Modal */}
+        {/* BottomSheet Modal for AI Answers */}
         <BottomSheet
           isOpen={isSheetOpen}
           onClose={handleCloseSheet}
@@ -362,6 +507,23 @@ export default function Home() {
           isLoading={isLoading}
           isFallback={isFallback}
           language={language}
+        />
+
+        {/* Gemini API Key Modal */}
+        <ApiKeyModal
+          isOpen={isApiKeyModalOpen}
+          onClose={() => setIsApiKeyModalOpen(false)}
+          geminiKey={geminiKey}
+          geminiModel={geminiModel}
+          onSaveKey={handleSaveGeminiKey}
+          onClearKey={handleClearGeminiKey}
+        />
+
+        {/* Custom Match Modal */}
+        <CustomMatchModal
+          isOpen={isCustomMatchModalOpen}
+          onClose={() => setIsCustomMatchModalOpen(false)}
+          onCreateCustomMatch={handleCreateCustomMatch}
         />
       </main>
     </div>

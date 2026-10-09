@@ -140,7 +140,7 @@ export function BottomSheet({
 
   // WhatsApp share
   const handleShare = () => {
-    const textToShare = `🏏 *Match Buddy AI Insights*\n\n*${data?.title}*\n${streamedText}\n\n_Shared from Match Buddy Live Cricket Companion_`;
+    const textToShare = `🏆 *Match Buddy AI Insights*\n\n*${data?.title}*\n${streamedText}\n\n_Shared from Match Buddy - AI Live Sports Companion_`;
     const url = `https://wa.me/?text=${encodeURIComponent(textToShare)}`;
     window.open(url, "_blank");
   };

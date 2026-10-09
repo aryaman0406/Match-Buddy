@@ -7,11 +7,55 @@ interface OnFieldProps {
   players: Player[];
   onSelectPlayer: (player: Player) => void;
   strikerId?: string;
+  sportName?: string;
+  group1Label?: string;
+  group2Label?: string;
 }
 
-export function OnField({ players, onSelectPlayer, strikerId }: OnFieldProps) {
-  const batters = players.filter((p) => p.role === "Batter");
-  const bowlers = players.filter((p) => p.role === "Bowler");
+export function OnField({
+  players,
+  onSelectPlayer,
+  strikerId,
+  sportName = "Cricket",
+  group1Label,
+  group2Label,
+}: OnFieldProps) {
+  // Determine dynamic section labels based on sport
+  let label1 = group1Label;
+  let label2 = group2Label;
+
+  if (!label1 || !label2) {
+    const s = sportName.toLowerCase();
+    if (s.includes("cricket")) {
+      label1 = "Batting 🏏";
+      label2 = "Bowling 🎯";
+    } else if (s.includes("football") || s.includes("soccer")) {
+      label1 = "Attackers & Creators ⚽";
+      label2 = "Rival Stars 🛡️";
+    } else if (s.includes("basketball")) {
+      label1 = "Scorers & Playmakers 🏀";
+      label2 = "Rival Stars 🎯";
+    } else if (s.includes("tennis")) {
+      label1 = "Active Player 🎾";
+      label2 = "Opponent 🏆";
+    } else if (s.includes("formula") || s.includes("f1")) {
+      label1 = "Race Leader 🏎️";
+      label2 = "Chasers 🏁";
+    } else if (s.includes("kabaddi")) {
+      label1 = "Raiders 🤼";
+      label2 = "Defenders 🛡️";
+    } else {
+      label1 = "Key Starters ⭐";
+      label2 = "Opponent Contenders 🎯";
+    }
+  }
+
+  const group1Players = players.filter((p) => p.role === "Batter");
+  const group2Players = players.filter((p) => p.role === "Bowler");
+
+  // Fallback if players aren't strictly separated into Batter/Bowler
+  const displayGroup1 = group1Players.length > 0 ? group1Players : players.slice(0, Math.ceil(players.length / 2));
+  const displayGroup2 = group2Players.length > 0 ? group2Players : players.slice(Math.ceil(players.length / 2));
 
   return (
     <section className="w-full space-y-4" aria-labelledby="on-field-heading">
@@ -20,49 +64,51 @@ export function OnField({ players, onSelectPlayer, strikerId }: OnFieldProps) {
           id="on-field-heading"
           className="text-[13px] font-semibold uppercase tracking-wider text-text-muted"
         >
-          Players on Field
+          Key Players on Field
         </h2>
         <span className="text-[11px] text-text-muted">Tap any player for AI intro</span>
       </div>
 
-      {/* Batting Section */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5 pl-1">
-          <span>Batting</span>
-          <span className="text-xs">🏏</span>
+      {/* Group 1 Section */}
+      {displayGroup1.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5 pl-1">
+            <span>{label1}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            {displayGroup1.map((player) => {
+              const isStriker = strikerId ? player.id === strikerId : player.isStriker;
+              return (
+                <PlayerCard
+                  key={player.id}
+                  player={player}
+                  isStriker={isStriker}
+                  onSelect={() => onSelectPlayer(player)}
+                />
+              );
+            })}
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-          {batters.map((player) => {
-            const isStriker = strikerId ? player.id === strikerId : player.isStriker;
-            return (
+      )}
+
+      {/* Group 2 Section */}
+      {displayGroup2.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5 pl-1">
+            <span>{label2}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            {displayGroup2.map((player) => (
               <PlayerCard
                 key={player.id}
                 player={player}
-                isStriker={isStriker}
+                isStriker={false}
                 onSelect={() => onSelectPlayer(player)}
               />
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
-
-      {/* Bowling Section */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5 pl-1">
-          <span>Bowling</span>
-          <span className="text-xs">🎯</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-          {bowlers.map((player) => (
-            <PlayerCard
-              key={player.id}
-              player={player}
-              isStriker={false}
-              onSelect={() => onSelectPlayer(player)}
-            />
-          ))}
-        </div>
-      </div>
+      )}
     </section>
   );
 }
@@ -98,11 +144,11 @@ function PlayerCard({ player, isStriker, onSelect }: PlayerCardProps) {
             </span>
             {isStriker && (
               <span
-                title="Current Striker"
+                title="Active Performer"
                 className="text-xs px-1 rounded bg-amber-500/20 text-amber-400 font-bold"
-                aria-label="Current striker"
+                aria-label="Active"
               >
-                🏏*
+                ★
               </span>
             )}
           </div>
@@ -114,10 +160,10 @@ function PlayerCard({ player, isStriker, onSelect }: PlayerCardProps) {
 
       {/* Bottom stats row */}
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-theme/50 relative z-10">
-        <span className="text-xs font-bold tabular-nums text-foreground">
+        <span className="text-xs font-bold tabular-nums text-foreground truncate max-w-[120px]">
           {player.onField}
         </span>
-        <span className="text-[10px] font-medium text-text-muted group-hover:text-accent-ai flex items-center gap-0.5 transition-colors">
+        <span className="text-[10px] font-medium text-text-muted group-hover:text-accent-ai flex items-center gap-0.5 transition-colors shrink-0">
           Tap for intro →
         </span>
       </div>
