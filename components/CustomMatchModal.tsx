@@ -55,6 +55,7 @@ export function CustomMatchModal({
       seriesOrLeague: league,
       teams: [t1Short, t2Short],
       teamFullNames: [team1, team2],
+      winProbability: { team1: 52, team2: 48 },
       scoreDisplay: {
         primary: score,
         primaryLabel: `${t1Short} vs ${t2Short}`,

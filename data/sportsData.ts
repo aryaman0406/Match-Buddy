@@ -1,6 +1,18 @@
-import { Player, MatchEvent, SimulationStep } from "./match";
+import { Player, MatchEvent } from "./match";
 
 export type SportId = "cricket" | "football" | "basketball" | "tennis" | "f1" | "kabaddi" | "custom";
+
+export interface SportSimulationStep {
+  scorePrimary: string;
+  progressText: string;
+  progressPercent: number;
+  secondaryStatus: string;
+  activePerformerId: string;
+  playerStatsUpdates?: { [playerId: string]: string };
+  winProbability?: { team1: number; team2: number };
+  commentary?: string;
+  newEvent?: MatchEvent;
+}
 
 export interface SportMatchConfig {
   id: string;
@@ -11,6 +23,7 @@ export interface SportMatchConfig {
   seriesOrLeague: string;
   teams: [string, string];
   teamFullNames: [string, string];
+  winProbability: { team1: number; team2: number };
   scoreDisplay: {
     primary: string;
     primaryLabel: string;
@@ -26,7 +39,7 @@ export interface SportMatchConfig {
   };
   quickQuestions: string[];
   rulesDictionary: Record<string, { term: string; en: string; hinglish: string }>;
-  simulationSteps?: SimulationStep[];
+  simulationSequence?: SportSimulationStep[];
 }
 
 export const allSportsMatches: SportMatchConfig[] = [
@@ -40,6 +53,7 @@ export const allSportsMatches: SportMatchConfig[] = [
     seriesOrLeague: "2nd T20I, Mumbai",
     teams: ["IND", "AUS"],
     teamFullNames: ["India", "Australia"],
+    winProbability: { team1: 64, team2: 36 },
     scoreDisplay: {
       primary: "112/3",
       primaryLabel: "IND",
@@ -195,6 +209,74 @@ export const allSportsMatches: SportMatchConfig[] = [
         hinglish: "Shuruaat ke overs me sirf 2 fielders 30-yard boundary ke bahar reh sakte hain, jisse batters zyada boundaries laga sakein.",
       },
     },
+    simulationSequence: [
+      {
+        scorePrimary: "116/3",
+        progressText: "14.3 / 20 Overs",
+        progressPercent: 72,
+        secondaryStatus: "Need 50 off 33 balls · RRR 9.09",
+        activePerformerId: "hardik-pandya",
+        winProbability: { team1: 71, team2: 29 },
+        playerStatsUpdates: { "hardik-pandya": "45* (29)", "mitchell-starc": "2.3-0-22-1" },
+        newEvent: {
+          id: "sim-four-14-3",
+          over: "14.3",
+          type: "free-hit",
+          title: "FOUR! Cracking Cover Drive by Hardik",
+          term: "Boundary (4 Runs)",
+          badgeText: "BOUNDARY",
+          badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+          fallbackExplain: {
+            en: "Hardik opened the face of the blade and pierced extra cover for four. India are now within 50 runs of victory.",
+            hinglish: "Hardik ne Starc ki ball ko khubsurat cover drive markar 4 runs liye. Target ab 50 runs ka reh gaya hai.",
+          },
+        },
+      },
+      {
+        scorePrimary: "123/3",
+        progressText: "14.5 / 20 Overs",
+        progressPercent: 73,
+        secondaryStatus: "Need 43 off 31 balls · RRR 8.32",
+        activePerformerId: "suryakumar-yadav",
+        winProbability: { team1: 79, team2: 21 },
+        playerStatsUpdates: { "suryakumar-yadav": "28* (15)", "mitchell-starc": "2.5-0-29-1" },
+        newEvent: {
+          id: "sim-six-14-5",
+          over: "14.5",
+          type: "free-hit",
+          title: "SIX! Trademark SKY Scoop Ramp",
+          term: "Maximum (6 Runs)",
+          badgeText: "MAXIMUM",
+          badgeColor: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+          fallbackExplain: {
+            en: "Surya used Starc's 144 km/h pace to ramp the ball deep over fine leg. RRR plunges down to 8.32.",
+            hinglish: "Surya ne ghutne par baith kar fine leg ke upar se 6 runs maar diye! Australia pressure me aa gaya hai.",
+          },
+        },
+      },
+      {
+        scorePrimary: "128/3",
+        progressText: "15.1 / 20 Overs",
+        progressPercent: 76,
+        secondaryStatus: "Need 38 off 29 balls · RRR 7.86",
+        activePerformerId: "hardik-pandya",
+        winProbability: { team1: 86, team2: 14 },
+        playerStatsUpdates: { "hardik-pandya": "50* (31)", "pat-cummins": "3.1-0-30-1" },
+        newEvent: {
+          id: "sim-fifty-15-1",
+          over: "15.1",
+          type: "free-hit",
+          title: "50 FOR HARDIK PANDYA! (31b)",
+          term: "Half-Century Milestone",
+          badgeText: "50 RUNS",
+          badgeColor: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+          fallbackExplain: {
+            en: "Hardik Pandya brings up a clutch 31-ball fifty under intense chase pressure. India are now firm favorites.",
+            hinglish: "Hardik ne sirf 31 balls me apni fifty poori ki! Match ab poori tarah India ke control me hai.",
+          },
+        },
+      },
+    ],
   },
 
   // 2. FOOTBALL / SOCCER (Real Madrid vs Barcelona - El Clásico)
@@ -207,6 +289,7 @@ export const allSportsMatches: SportMatchConfig[] = [
     seriesOrLeague: "La Liga · El Clásico, Santiago Bernabéu",
     teams: ["RMA", "FCB"],
     teamFullNames: ["Real Madrid", "Barcelona"],
+    winProbability: { team1: 68, team2: 32 },
     scoreDisplay: {
       primary: "2 - 1",
       primaryLabel: "RMA vs FCB",
@@ -218,7 +301,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "vinicius-jr",
         name: "Vinícius Júnior",
-        role: "Batter", // UI slot 1 (Attacker)
+        role: "Batter",
         onField: "1 Goal, 1 Assist",
         country: "Brazil",
         homeState: "Rio de Janeiro",
@@ -238,7 +321,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "jude-bellingham",
         name: "Jude Bellingham",
-        role: "Batter", // UI slot 2 (Attacking Midfielder)
+        role: "Batter",
         onField: "89% Pass Acc, 4 Tackles",
         country: "England",
         homeState: "Birmingham",
@@ -258,7 +341,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "robert-lewandowski",
         name: "Robert Lewandowski",
-        role: "Bowler", // UI slot 3 (Opponent Striker)
+        role: "Bowler",
         onField: "1 Goal (58')",
         country: "Poland",
         homeState: "Warsaw",
@@ -277,7 +360,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "lamine-yamal",
         name: "Lamine Yamal",
-        role: "Bowler", // UI slot 4 (Opponent Winger)
+        role: "Bowler",
         onField: "5 Dribbles, 3 Key Passes",
         country: "Spain",
         homeState: "Mataró",
@@ -321,19 +404,6 @@ export const allSportsMatches: SportMatchConfig[] = [
           hinglish: "Lewandowski ne Madrid ke offside trap ko beat kiya aur Yamal ke cross par khubsurat header markar score 2-1 kar diya. Match me zabardast thrill wapas aa gaya hai.",
         },
       },
-      {
-        id: "evt-yellow-card",
-        over: "44'",
-        type: "wicket",
-        title: "Tactical Yellow Card",
-        term: "Tactical Foul Rule",
-        badgeText: "YELLOW CARD",
-        badgeColor: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-        fallbackExplain: {
-          en: "A cynical foul committed deliberately to break up an imminent 3-on-2 counter-attack. The defender willingly sacrificed a yellow card to prevent a direct shot on goal.",
-          hinglish: "Defender ne jaanbujhkar player ko gira diya taaki dangerous counter-attack ruk sake. Is tactical foul ke liye referee ne yellow card dikhaya.",
-        },
-      },
     ],
     storyFallback: {
       en: "Real Madrid took commanding 2-0 control through Vinícius's solo brilliance and a swift transition strike. Barcelona altered their formation at halftime, pulling one back through Lewandowski at 58'. Barcelona are now throwing numbers forward in search of an equalizer with 16 minutes left.",
@@ -356,12 +426,53 @@ export const allSportsMatches: SportMatchConfig[] = [
         en: "Awarded when a direct foul or handball occurs inside the defending team's penalty box. Taken from the 12-yard penalty spot with only the goalkeeper defending.",
         hinglish: "Jab penalty box ke andar foul ya handball hota hai, toh 12 yard se direct penalty milti hai jisme sirf goalkeeper saamne hota hai.",
       },
-      "yellow card": {
-        term: "Yellow Card & Accumulation",
-        en: "A formal caution issued for reckless fouls, dissent, or tactical stopping of attacks. Receiving two yellow cards in a single match results in an automatic red card dismissal.",
-        hinglish: "Yeh referee ki warning hoti hai. Agar ek hi match me kisi player ko do yellow card mil jayein toh use red card milta hai aur ground se bahar jaana padta hai.",
-      },
     },
+    simulationSequence: [
+      {
+        scorePrimary: "2 - 2",
+        progressText: "82' 2nd Half",
+        progressPercent: 91,
+        secondaryStatus: "EQUALIZER! Lamine Yamal curler from 20 yards!",
+        activePerformerId: "lamine-yamal",
+        winProbability: { team1: 45, team2: 55 },
+        playerStatsUpdates: { "lamine-yamal": "1 Goal, 1 Assist, 6 Dribbles" },
+        newEvent: {
+          id: "sim-fb-yamal-goal",
+          over: "82'",
+          type: "free-hit",
+          title: "GOAL! 17-Yr-Old Yamal Stunner (2-2)",
+          term: "Curled Top Corner Strike",
+          badgeText: "EQUALIZER",
+          badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+          fallbackExplain: {
+            en: "Lamine Yamal cut inside from the right wing and curled an unstoppable left-footed missile into the top corner. El Clásico is level at 2-2!",
+            hinglish: "Lamine Yamal ne right wing se cut karke top corner me zabardast goal daal diya! Score 2-2 barabar ho gaya!",
+          },
+        },
+      },
+      {
+        scorePrimary: "3 - 2",
+        progressText: "90+1' Stoppage",
+        progressPercent: 98,
+        secondaryStatus: "GOAL! JUDE BELLINGHAM 91st-MIN WINNER!",
+        activePerformerId: "jude-bellingham",
+        winProbability: { team1: 94, team2: 6 },
+        playerStatsUpdates: { "jude-bellingham": "1 Goal (91'), 5 Tackles" },
+        newEvent: {
+          id: "sim-fb-jude-winner",
+          over: "90+1'",
+          type: "free-hit",
+          title: "GOAL! Bellingham Stoppage-Time Winner!",
+          term: "Clutch Match Winner",
+          badgeText: "WINNER 91'",
+          badgeColor: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+          fallbackExplain: {
+            en: "Jude Bellingham stormed into the 6-yard box and converted Vinícius's cutback in the 91st minute. The Bernabéu erupts as Madrid lead 3-2!",
+            hinglish: "Bellingham ne 91ve minute me Vini ke pass par winning goal daal diya! Real Madrid 3-2 se aage ho gayi!",
+          },
+        },
+      },
+    ],
   },
 
   // 3. BASKETBALL (Los Angeles Lakers vs Golden State Warriors)
@@ -374,6 +485,7 @@ export const allSportsMatches: SportMatchConfig[] = [
     seriesOrLeague: "NBA Western Conference Clash · Crypto.com Arena",
     teams: ["LAL", "GSW"],
     teamFullNames: ["Los Angeles Lakers", "Golden State Warriors"],
+    winProbability: { team1: 62, team2: 38 },
     scoreDisplay: {
       primary: "108 - 104",
       primaryLabel: "LAL vs GSW",
@@ -385,7 +497,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "lebron-james",
         name: "LeBron James",
-        role: "Batter", // UI slot 1
+        role: "Batter",
         onField: "28 Pts, 8 Reb, 9 Ast",
         country: "USA",
         homeState: "Ohio",
@@ -405,7 +517,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "anthony-davis",
         name: "Anthony Davis",
-        role: "Batter", // UI slot 2
+        role: "Batter",
         onField: "22 Pts, 14 Reb, 4 Blk",
         country: "USA",
         homeState: "Illinois",
@@ -425,7 +537,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "stephen-curry",
         name: "Stephen Curry",
-        role: "Bowler", // UI slot 3
+        role: "Bowler",
         onField: "32 Pts, 7/13 3PM",
         country: "USA",
         homeState: "North Carolina",
@@ -433,7 +545,7 @@ export const allSportsMatches: SportMatchConfig[] = [
         avatarInitials: "SC",
         keyFacts: [
           "The greatest shooter in basketball history, single-handedly revolutionizing the 3-point game",
-          "4-time NBA Champion and 2-time regular-season MVP (including the only unanimous MVP)",
+          "4-time NBA Champion and 2-time regular-season MVP",
           "Limitless shooting range extending well beyond 35 feet",
         ],
         fallbackIntro: {
@@ -444,7 +556,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "draymond-green",
         name: "Draymond Green",
-        role: "Bowler", // UI slot 4
+        role: "Bowler",
         onField: "8 Pts, 9 Reb, 10 Ast, 2 Stl",
         country: "USA",
         homeState: "Michigan",
@@ -475,19 +587,6 @@ export const allSportsMatches: SportMatchConfig[] = [
           hinglish: "Curry ne defender ko crossover se jhulaya aur 24-foot ki line ke peeche se step-back 3-pointer daal diya! Lead ab sirf 4 points ki reh gayi hai.",
         },
       },
-      {
-        id: "evt-ad-block",
-        over: "Q4 2:55",
-        type: "drs",
-        title: "Davis Monster Chasedown Block",
-        term: "Rim Protection & Goaltending Rule",
-        badgeText: "REJECTED!",
-        badgeColor: "bg-rose-500/15 text-rose-400 border-rose-500/30",
-        fallbackExplain: {
-          en: "Anthony Davis rose to swat away a driving layup off the backboard just before it reached its apex, confirmed legal without goaltending.",
-          hinglish: "Anthony Davis ne peeche se aakar ball ko board par pin kar diya! Clean block tha aur koi goaltending foul nahi diya gaya.",
-        },
-      },
     ],
     storyFallback: {
       en: "The game was a back-and-forth dogfight through three quarters. LeBron and Davis dominated inside the paint to build a 9-point cushion, but Steph Curry responded with three clutch fourth-quarter triples. With 2:45 remaining, the Lakers cling to a tense 108-104 lead.",
@@ -505,12 +604,53 @@ export const allSportsMatches: SportMatchConfig[] = [
         en: "Achieved when a player records double digits (10 or more) in three of the five positive statistical categories: points, rebounds, assists, steals, or blocks.",
         hinglish: "Jab ek player 10 ya usse zyada points, rebounds aur assists teen alag stats me bana leta hai, use triple-double kehte hain.",
       },
-      traveling: {
-        term: "Traveling Violation",
-        en: "Illegally moving the pivot foot or taking more than two steps without dribbling the basketball. Results in an immediate loss of possession.",
-        hinglish: "Bina ball bounce kiye 2 steps se zyada chalne ko traveling foul kehte hain aur ball opposition ko mil jaati hai.",
-      },
     },
+    simulationSequence: [
+      {
+        scorePrimary: "108 - 107",
+        progressText: "Q4 1:45",
+        progressPercent: 96,
+        secondaryStatus: "Curry drills another triple! 1-point game!",
+        activePerformerId: "stephen-curry",
+        winProbability: { team1: 52, team2: 48 },
+        playerStatsUpdates: { "stephen-curry": "35 Pts, 8/14 3PM" },
+        newEvent: {
+          id: "sim-bb-curry-clutch",
+          over: "Q4 1:45",
+          type: "free-hit",
+          title: "CURRY CLUTCH THREE! (35 PTS)",
+          term: "Transition 3-Pointer",
+          badgeText: "1-PT GAME",
+          badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+          fallbackExplain: {
+            en: "Steph Curry pulled up from 30 feet in transition to bury his 8th triple! The arena is on its feet.",
+            hinglish: "Curry ne 30 feet door se bina ruke 8va three-pointer daal diya! Ab sirf 1 point ka gap hai.",
+          },
+        },
+      },
+      {
+        scorePrimary: "112 - 107",
+        progressText: "Q4 0:24",
+        progressPercent: 99,
+        secondaryStatus: "LeBron and-one drive seals it!",
+        activePerformerId: "lebron-james",
+        winProbability: { team1: 96, team2: 4 },
+        playerStatsUpdates: { "lebron-james": "31 Pts, 9 Reb, 10 Ast" },
+        newEvent: {
+          id: "sim-bb-lebron-andone",
+          over: "Q4 0:24",
+          type: "free-hit",
+          title: "LEBRON AND-ONE DOWNHILL DRIVE!",
+          term: "Basket + Free Throw (And-One)",
+          badgeText: "CLUTCH AND-1",
+          badgeColor: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+          fallbackExplain: {
+            en: "LeBron James absorbed contact through Draymond Green to finish the layup off the glass and hit the ensuing free throw.",
+            hinglish: "LeBron ne foul hone ke bawajood basket complete kiya aur free throw se lead 5 points ki kar di!",
+          },
+        },
+      },
+    ],
   },
 
   // 4. TENNIS (Carlos Alcaraz vs Novak Djokovic)
@@ -523,6 +663,7 @@ export const allSportsMatches: SportMatchConfig[] = [
     seriesOrLeague: "Wimbledon Men's Singles Final · Centre Court",
     teams: ["ALC", "DJO"],
     teamFullNames: ["Carlos Alcaraz", "Novak Djokovic"],
+    winProbability: { team1: 56, team2: 44 },
     scoreDisplay: {
       primary: "6-4, 4-6, 4-3",
       primaryLabel: "Alcaraz vs Djokovic",
@@ -534,7 +675,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "carlos-alcaraz",
         name: "Carlos Alcaraz",
-        role: "Batter", // UI slot 1
+        role: "Batter",
         onField: "Set 3 (4-3, 40-30) · 38 Winners",
         country: "Spain",
         homeState: "El Palmar, Murcia",
@@ -547,14 +688,14 @@ export const allSportsMatches: SportMatchConfig[] = [
           "Electric speed, booming inside-out forehand, and disguised drop shots",
         ],
         fallbackIntro: {
-          en: "Carlos Alcaraz is tennis's dynamic Spanish prodigy whose blistering footspeed and devastating forehand test Djokovic's legendary baseline stamina. Serving at 40-30 in the 8th game, holding serve puts him one game from taking the pivotal third set.",
-          hinglish: "Carlos Alcaraz Spain ke sensational superstar hain jinki speed aur forehand power zabardast hai. Abhi 40-30 par serve kar rahe hain aur yeh game jeetkar teesra set apne naam karne ki taraf badhenge.",
+          en: "Carlos Alcaraz is tennis's dynamic Spanish prodigy whose blistering footspeed and devastating forehand test Djokovic's baseline stamina. Serving at 40-30, holding puts him one game from taking the 3rd set.",
+          hinglish: "Carlos Alcaraz Spain ke superstar hain jinki speed aur forehand power zabardast hai. Abhi 40-30 par serve kar rahe hain aur teesra set jeetne ki taraf badhenge.",
         },
       },
       {
         id: "novak-djokovic",
         name: "Novak Djokovic",
-        role: "Bowler", // UI slot 2
+        role: "Bowler",
         onField: "Set 3 (3-4) · 88% Net Points",
         country: "Serbia",
         homeState: "Belgrade",
@@ -566,8 +707,8 @@ export const allSportsMatches: SportMatchConfig[] = [
           "Unrivaled mental toughness in tiebreaks and five-set epics",
         ],
         fallbackIntro: {
-          en: "Novak Djokovic is the all-time 24-time Grand Slam champion renowned for his elastic defensive sliding and clutch return of serve. Looking to break back, he is probing Alcaraz's backhand with deep, penetrating groundstrokes.",
-          hinglish: "Novak Djokovic 24 Grand Slam jeet kar tennis ke GOAT maane jaate hain. Unki return aur baseline defense se nikalna mushkil hota hai aur abhi break point banane ki koshish kar rahe hain.",
+          en: "Novak Djokovic is the all-time 24-time Grand Slam champion renowned for his elastic defense and clutch return. Looking to break back, he is probing Alcaraz's backhand.",
+          hinglish: "Novak Djokovic 24 Grand Slam jeet kar tennis ke GOAT hain. Unki return aur baseline defense se nikalna mushkil hota hai.",
         },
       },
     ],
@@ -585,42 +726,65 @@ export const allSportsMatches: SportMatchConfig[] = [
           hinglish: "Alcaraz par break point ka khatra tha aur unhone line par 130 mph ka ace maara jisse game deuce ho gaya.",
         },
       },
-      {
-        id: "evt-drop-shot",
-        over: "Set 3 Gm 5",
-        type: "free-hit",
-        title: "Disguised Forehand Drop Shot Winner",
-        term: "Drop Shot Strategy",
-        badgeText: "WINNER",
-        badgeColor: "bg-purple-500/15 text-purple-400 border-purple-500/30",
-        fallbackExplain: {
-          en: "Alcaraz feigned a heavy topspin drive and delicately caressed a backspin drop shot that died just over the net, catching Djokovic deep behind the baseline.",
-          hinglish: "Alcaraz ne heavy forehand ka action dikhakar achanak net ke paas drop shot daal diya jise Djokovic reach nahi kar sake.",
-        },
-      },
     ],
     storyFallback: {
-      en: "Alcaraz captured the first set 6-4 with aggressive baseline hitting, but Djokovic roared back to take the second 6-4. In this pivotal third set, neither player has yielded an inch. Alcaraz leads 4-3 and is serving at 40-30 in game 8.",
-      hinglish: "Pehle set me Alcaraz ne 6-4 se baazi maari, par second set me Djokovic ne 6-4 se barabari kar li. Ab teesre set me kaante ki takkar hai jisme Alcaraz 4-3 se aage serve kar rahe hain.",
+      en: "Alcaraz captured the first set 6-4 with aggressive baseline hitting, but Djokovic roared back to take the second 6-4. Alcaraz leads 4-3 and is serving at 40-30 in game 8.",
+      hinglish: "Pehle set me Alcaraz ne 6-4 se baazi maari, par second set me Djokovic ne barabari kar li. Ab teesre set me Alcaraz 4-3 se aage serve kar rahe hain.",
     },
-    quickQuestions: ["What is Break Point?", "How does Deuce and Advantage work?", "What is a Tiebreak?", "What is Hawk-Eye challenge?"],
+    quickQuestions: ["What is Break Point?", "How does Deuce work?", "What is a Tiebreak?"],
     rulesDictionary: {
       "break point": {
         term: "Break Point",
         en: "A situation where the receiving player is one point away from winning the game against the server's delivery.",
         hinglish: "Jab return karne wala player bas 1 point door hota hai server ki game chheen lene se, use break point kehte hain.",
       },
-      deuce: {
-        term: "Deuce & Advantage",
-        en: "When a game reaches 40-40, it is called deuce. A player must win two consecutive points (Advantage followed by Game) to secure the game.",
-        hinglish: "40-40 score ko deuce kehte hain. Game jeetne ke liye lagataar 2 points (Advantage aur fir Game Point) jeetne padte hain.",
-      },
-      tiebreak: {
-        term: "Tiebreak",
-        en: "Played at 6-6 in games. The first player to reach 7 points with a margin of at least 2 points wins the set.",
-        hinglish: "Jab set 6-6 par barabar hota hai, tab 7 points ka tiebreak hota hai. Jo player 2 points ke margin se 7 point banata hai woh set jeet jaata hai.",
-      },
     },
+    simulationSequence: [
+      {
+        scorePrimary: "6-4, 4-6, 5-3",
+        progressText: "Set 3 · Game 9",
+        progressPercent: 70,
+        secondaryStatus: "Alcaraz holds with 132mph Ace! Leads 5-3",
+        activePerformerId: "carlos-alcaraz",
+        winProbability: { team1: 72, team2: 28 },
+        playerStatsUpdates: { "carlos-alcaraz": "Set 3 (5-3) · 40 Winners" },
+        newEvent: {
+          id: "sim-tn-ace-hold",
+          over: "Set 3 Gm 8",
+          type: "free-hit",
+          title: "ACE! Alcaraz Holds for 5-3 Lead",
+          term: "Service Hold",
+          badgeText: "GAME HOLD",
+          badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+          fallbackExplain: {
+            en: "Carlos Alcaraz blasted a flat 132 mph ace down the T to seal the hold. He is now one game from capturing the critical 3rd set.",
+            hinglish: "Alcaraz ne seedha 132 mph ka ace maarkar game jeeta aur 5-3 ki lead bana li.",
+          },
+        },
+      },
+      {
+        scorePrimary: "6-4, 4-6, 6-3",
+        progressText: "Set 4 · Game 1",
+        progressPercent: 80,
+        secondaryStatus: "SET ALCARAZ! Spanish star breaks Djokovic!",
+        activePerformerId: "carlos-alcaraz",
+        winProbability: { team1: 82, team2: 18 },
+        playerStatsUpdates: { "carlos-alcaraz": "2 Sets to 1 · 43 Winners" },
+        newEvent: {
+          id: "sim-tn-set-won",
+          over: "Set 3 Gm 9",
+          type: "free-hit",
+          title: "BREAK & SET! Alcaraz Takes Set 3 (6-3)",
+          term: "Set Point Conversion",
+          badgeText: "SET 3 WON",
+          badgeColor: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+          fallbackExplain: {
+            en: "Alcaraz hit a running forehand passing shot down the line on set point to break Djokovic and take a 2-1 sets lead!",
+            hinglish: "Alcaraz ne line par passing shot markar Djokovic ki serve todi aur teesra set 6-3 se jeet liya!",
+          },
+        },
+      },
+    ],
   },
 
   // 5. FORMULA 1 (Monaco Grand Prix)
@@ -633,6 +797,7 @@ export const allSportsMatches: SportMatchConfig[] = [
     seriesOrLeague: "Formula 1 Grand Prix de Monaco · Circuit de Monaco",
     teams: ["RBR", "FER"],
     teamFullNames: ["Red Bull Racing", "Ferrari"],
+    winProbability: { team1: 78, team2: 22 },
     scoreDisplay: {
       primary: "Lap 54 / 78",
       primaryLabel: "VER (P1)",
@@ -644,7 +809,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "max-verstappen",
         name: "Max Verstappen",
-        role: "Batter", // UI slot 1 (Leader)
+        role: "Batter",
         onField: "P1 (Leader) · Interval: +1.4s · Hard Tyres",
         country: "Netherlands",
         homeState: "Hasselt",
@@ -657,14 +822,14 @@ export const allSportsMatches: SportMatchConfig[] = [
           "Incredible tyre management and metronomic lap time consistency",
         ],
         fallbackIntro: {
-          en: "Max Verstappen leads the Monaco Grand Prix in his Red Bull, driving with surgical precision between the armco barriers. With Leclerc pressing within 1.5 seconds, avoiding backmarker traffic is his primary battle.",
-          hinglish: "Max Verstappen Monaco Grand Prix me P1 par lead kar rahe hain. Leclerc unke peeche 1.4 seconds ke fasle par hain aur Monaco ki tight streets par ek galti bhi crash kara sakti hai.",
+          en: "Max Verstappen leads the Monaco Grand Prix in his Red Bull, driving with surgical precision between the armco barriers. Avoiding backmarker traffic is his primary battle.",
+          hinglish: "Max Verstappen Monaco Grand Prix me P1 par lead kar rahe hain. Leclerc unke peeche 1.4 seconds ke fasle par hain aur ek galti bhi crash kara sakti hai.",
         },
       },
       {
         id: "charles-leclerc",
         name: "Charles Leclerc",
-        role: "Bowler", // UI slot 2 (Chaser)
+        role: "Bowler",
         onField: "P2 · Fast Lap (1:13.821) · Medium Tyres",
         country: "Monaco",
         homeState: "Monte Carlo",
@@ -676,8 +841,8 @@ export const allSportsMatches: SportMatchConfig[] = [
           "Chasing victory in Monte Carlo with superior medium-compound grip",
         ],
         fallbackIntro: {
-          en: "Charles Leclerc is hunting Verstappen on his home circuit of Monaco with blistering lap times. Armed with fresh medium tyres, he needs to execute an undercut or force a rare mistake at the chicane.",
-          hinglish: "Charles Leclerc apne home track Monaco par Ferrari ke saath second number par chase kar rahe hain. Unke paas fresh tyres hain aur woh pit-stop window me overtake karne ki taaq me hain.",
+          en: "Charles Leclerc is hunting Verstappen on his home circuit of Monaco with blistering lap times. Needing an overtake, he is watching the pit windows.",
+          hinglish: "Charles Leclerc apne home track Monaco par Ferrari ke saath second number par chase kar rahe hain.",
         },
       },
     ],
@@ -691,41 +856,69 @@ export const allSportsMatches: SportMatchConfig[] = [
         badgeText: "FASTEST LAP",
         badgeColor: "bg-purple-500/15 text-purple-400 border-purple-500/30",
         fallbackExplain: {
-          en: "Leclerc set all three sectors purple to record a 1:13.821 lap time, claiming the provisional championship bonus point and trimming Verstappen's lead to 1.4s.",
-          hinglish: "Leclerc ne teeno sectors me fastest time nikaal kar race ka fastest lap banaya aur 1 extra point ke daavedaar ban gaye.",
-        },
-      },
-      {
-        id: "evt-pit-stop",
-        over: "Lap 34",
-        type: "drs",
-        title: "Rapid 2.1s Pit Stop by Red Bull",
-        term: "Pit Stop & Undercut Strategy",
-        badgeText: "PIT STOP",
-        badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-        fallbackExplain: {
-          en: "Red Bull's pit crew executed a blistering 2.1-second tyre swap to hard compounds, returning Verstappen safely into clear air ahead of Ferrari.",
-          hinglish: "Red Bull crew ne sirf 2.1 seconds me chaaro tyres badal diye, jisse Verstappen bina traffic me phase leader ban kar bahar nikle.",
+          en: "Leclerc set all three sectors purple to record a 1:13.821 lap time, claiming the provisional championship bonus point.",
+          hinglish: "Leclerc ne teeno sectors me fastest time nikaal kar race ka fastest lap banaya.",
         },
       },
     ],
     storyFallback: {
-      en: "Verstappen took pole position and defended into Sainte Devote at the race start. Ferrari kept Leclerc out on medium tyres to build an offset strategy. As tyre degradation sets in on Lap 54, the gap has shrunk to 1.4 seconds with 24 laps to go.",
-      hinglish: "Verstappen ne start se hi lead banaye rakhi thi, lekin Ferrari ne Leclerc ke saath different tyre strategy apnayi. Lap 54 par gap sirf 1.4 seconds reh gaya hai aur aakhri 24 laps me thrilling finish hone wali hai.",
+      en: "Verstappen defended into Sainte Devote at the start. Ferrari kept Leclerc out on medium tyres to build an offset strategy. As tyre wear sets in, the gap has shrunk to 1.4 seconds with 24 laps to go.",
+      hinglish: "Verstappen ne start se hi lead banaye rakhi thi, lekin Ferrari ne Leclerc ke saath different tyre strategy apnayi. Lap 54 par gap sirf 1.4 seconds reh gaya hai.",
     },
-    quickQuestions: ["How does DRS work?", "What is an Undercut in F1?", "What are Safety Car rules?", "What does Pole Position mean?"],
+    quickQuestions: ["How does DRS work?", "What is an Undercut?", "What are Safety Car rules?"],
     rulesDictionary: {
       drs: {
         term: "Drag Reduction System (DRS)",
         en: "A hydraulic flap on the rear wing that opens in designated zones when a car is within 1 second of the car ahead, reducing aerodynamic drag to aid overtaking.",
         hinglish: "DRS rear wing ka ek flap hota hai jo car ke aage wali car se 1 second ke andar hone par khulta hai aur speed badhata hai taaki overtake aasan ho sake.",
       },
-      undercut: {
-        term: "The Undercut Strategy",
-        en: "Pitting a lap earlier than a rival to gain time on fresh tyres while the rival is still circulating on worn tyres, jumping ahead once they pit.",
-        hinglish: "Apne aage wale rival se pehle pit stop lena taaki fresh tyre par tez lap daal kar uske pit karne par use piche chhod sakein.",
-      },
     },
+    simulationSequence: [
+      {
+        scorePrimary: "Lap 63 / 78",
+        progressText: "Gap: +0.782s (DRS Open)",
+        progressPercent: 81,
+        secondaryStatus: "Leclerc within 0.8s! DRS activated into Nouvelle Chicane!",
+        activePerformerId: "charles-leclerc",
+        winProbability: { team1: 65, team2: 35 },
+        playerStatsUpdates: { "charles-leclerc": "P2 · Gap: +0.78s (Fastest Sector 1)" },
+        newEvent: {
+          id: "sim-f1-drs-attack",
+          over: "Lap 63",
+          type: "free-hit",
+          title: "DRS ATTACK! Leclerc within 0.78s",
+          term: "DRS Window Overtake Attempt",
+          badgeText: "DRS ACTIVE",
+          badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+          fallbackExplain: {
+            en: "Leclerc has closed inside 1 second to deploy his rear wing DRS flap through the tunnel exit, threatening Verstappen's lead.",
+            hinglish: "Leclerc ne fasla 1 second se kam kar diya aur tunnel exit par DRS khol kar Verstappen par pressure bana diya.",
+          },
+        },
+      },
+      {
+        scorePrimary: "Lap 74 / 78",
+        progressText: "Gap: +2.140s",
+        progressPercent: 95,
+        secondaryStatus: "Verstappen masters backmarker traffic · 4 laps to flag!",
+        activePerformerId: "max-verstappen",
+        winProbability: { team1: 94, team2: 6 },
+        playerStatsUpdates: { "max-verstappen": "P1 · Gap: +2.14s" },
+        newEvent: {
+          id: "sim-f1-lead-secured",
+          over: "Lap 74",
+          type: "free-hit",
+          title: "Verstappen Clears Traffic, Gap Widens to 2.1s",
+          term: "Race Control in Monaco",
+          badgeText: "P1 EXTENDED",
+          badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+          fallbackExplain: {
+            en: "Verstappen sliced cleanly through lapped cars at Rascasse while Leclerc lost half a second, pushing the cushion to 2.1 seconds.",
+            hinglish: "Verstappen ne traffic ko clean tareeqe se overtake kiya aur lead 2.1 seconds tak badha li.",
+          },
+        },
+      },
+    ],
   },
 
   // 6. KABADDI (Patna Pirates vs Puneri Paltan)
@@ -738,6 +931,7 @@ export const allSportsMatches: SportMatchConfig[] = [
     seriesOrLeague: "Pro Kabaddi League · Finals, Hyderabad",
     teams: ["PAT", "PUN"],
     teamFullNames: ["Patna Pirates", "Puneri Paltan"],
+    winProbability: { team1: 66, team2: 34 },
     scoreDisplay: {
       primary: "32 - 28",
       primaryLabel: "Patna Pirates",
@@ -749,7 +943,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "sachin-tanwar",
         name: "Sachin Tanwar",
-        role: "Batter", // UI slot 1 (Lead Raider)
+        role: "Batter",
         onField: "11 Raid Points · Super 10",
         country: "India",
         homeState: "Rajasthan",
@@ -769,7 +963,7 @@ export const allSportsMatches: SportMatchConfig[] = [
       {
         id: "mohammadreza-shadloui",
         name: "Mohammadreza Shadloui",
-        role: "Bowler", // UI slot 2 (Left Corner Defender)
+        role: "Bowler",
         onField: "6 Tackle Points · High 5",
         country: "Iran",
         homeState: "Tehran",
@@ -800,36 +994,64 @@ export const allSportsMatches: SportMatchConfig[] = [
           hinglish: "Mat par sirf 3 defenders the, isliye raider ko out karne par Puneri ko 2 points mile aur all-out tal gaya.",
         },
       },
-      {
-        id: "evt-super-raid",
-        over: "24' Mins",
-        type: "free-hit",
-        title: "SUPER RAID by Sachin (3 Pts)",
-        term: "Super Raid Rule",
-        badgeText: "SUPER RAID",
-        badgeColor: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-        fallbackExplain: {
-          en: "Sachin tagged 3 Puneri defenders in a single breath and crossed the midline, giving Patna a massive momentum boost.",
-          hinglish: "Sachin ne ek hi raid me 3 defenders ko touch karke midline cross ki aur 3 points bator liye.",
-        },
-      },
     ],
     storyFallback: {
       en: "Puneri Paltan dominated early defense with Shadloui's ankle holds. However, Sachin Tanwar led Patna's comeback with a dazzling 3-point Super Raid. Patna lead 32-28 with 6 minutes remaining in a thrilling PKL showdown.",
       hinglish: "Pehle half me Puneri ne defense se dabav banaya, par Sachin Tanwar ke Super Raid ne Patna ko lead dila di. Ab aakhri 6 minutes bache hain aur score 32-28 hai.",
     },
-    quickQuestions: ["What is a Do-or-Die Raid?", "What is a Super Tackle?", "What is an All-Out in Kabaddi?", "What is a Bonus Point?"],
+    quickQuestions: ["What is a Do-or-Die Raid?", "What is a Super Tackle?", "What is an All-Out?"],
     rulesDictionary: {
       "do-or-die": {
         term: "Do-or-Die Raid",
         en: "If a team conducts two consecutive empty raids with zero points scored, their third raid is designated do-or-die. The raider must score a point or be declared out.",
         hinglish: "Agar lagataar do raids me koi point nahi banta, toh teesri raid Do-or-Die hoti hai jisme point lena zaroori hota hai warna raider out ho jaata hai.",
       },
-      "super tackle": {
-        term: "Super Tackle (2 Points)",
-        en: "Awarded when the defending team has 3 or fewer defenders remaining on the mat and successfully tackles the opponent's raider.",
-        hinglish: "Jab team me sirf 3 ya usse kam defenders bache hon aur woh raider ko pakad lein, toh 1 ki jagah 2 points milte hain.",
-      },
     },
+    simulationSequence: [
+      {
+        scorePrimary: "33 - 30",
+        progressText: "2nd Half · 37' Mins",
+        progressPercent: 92,
+        secondaryStatus: "SHADLOUI ANKLE HOLD! Super tackle brings Puneri close!",
+        activePerformerId: "mohammadreza-shadloui",
+        winProbability: { team1: 58, team2: 42 },
+        playerStatsUpdates: { "mohammadreza-shadloui": "8 Tackle Points (2 Super Tackles)" },
+        newEvent: {
+          id: "sim-kb-super-tackle-2",
+          over: "37' Mins",
+          type: "free-hit",
+          title: "SHADLOUI SUPER TACKLE! (2 Pts)",
+          term: "Crucial Super Tackle",
+          badgeText: "SUPER TACKLE",
+          badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+          fallbackExplain: {
+            en: "Shadloui executed a vicious diving ankle lock to bring down Patna's raider in a 3-man defense, reviving Puneri's chances.",
+            hinglish: "Shadloui ne diving ankle hold lagakar raider ko gira diya aur Puneri ko 2 points dila kar match me zinda rakha.",
+          },
+        },
+      },
+      {
+        scorePrimary: "36 - 31",
+        progressText: "Full Time · 40' Mins",
+        progressPercent: 100,
+        secondaryStatus: "PATNA PIRATES WIN PKL TITLE! Sachin 3-point multi-touch raid!",
+        activePerformerId: "sachin-tanwar",
+        winProbability: { team1: 100, team2: 0 },
+        playerStatsUpdates: { "sachin-tanwar": "14 Raid Points · Final MVP" },
+        newEvent: {
+          id: "sim-kb-title-win",
+          over: "40' Mins",
+          type: "free-hit",
+          title: "PATNA PIRATES CROWNED PKL CHAMPIONS!",
+          term: "Championship Victory",
+          badgeText: "CHAMPIONS",
+          badgeColor: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+          fallbackExplain: {
+            en: "Sachin Tanwar crossed the midline with two defenders on his back as the final whistle blows. Patna Pirates secure the championship 36-31!",
+            hinglish: "Sachin ne aakhri raid me 2 points lekar midline cross ki aur Patna Pirates ne trophy jeet li!",
+          },
+        },
+      },
+    ],
   },
 ];

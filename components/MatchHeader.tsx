@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Play, Pause } from "lucide-react";
+import { Sparkles, Play, Pause, TrendingUp } from "lucide-react";
 import { MatchSituation } from "@/data/match";
 
 interface MatchHeaderProps {
@@ -16,6 +16,7 @@ interface MatchHeaderProps {
   sportName?: string;
   seriesOrLeague?: string;
   teams?: [string, string];
+  winProbability?: { team1: number; team2: number };
   onOpenStorySoFar: () => void;
   isSimulating: boolean;
   onToggleSimulation: () => void;
@@ -27,6 +28,7 @@ export function MatchHeader({
   sportName = "Cricket",
   seriesOrLeague,
   teams,
+  winProbability,
   onOpenStorySoFar,
   isSimulating,
   onToggleSimulation,
@@ -51,6 +53,9 @@ export function MatchHeader({
     const currentOverFloat = parseFloat(matchData.overs);
     progressPercent = Math.min(100, Math.max(0, (currentOverFloat / matchData.totalOvers) * 100));
   }
+
+  const wp1 = winProbability?.team1 ?? 64;
+  const wp2 = winProbability?.team2 ?? 36;
 
   return (
     <section className="w-full bg-surface border border-theme rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 transition-all">
@@ -121,6 +126,33 @@ export function MatchHeader({
           className="h-full bg-gradient-to-r from-accent to-accent-ai transition-all duration-500 ease-out"
           style={{ width: `${progressPercent}%` }}
         />
+      </div>
+
+      {/* Win Probability Live Bar */}
+      <div className="space-y-1.5 bg-surface-raised/40 p-2.5 rounded-xl border border-theme/50">
+        <div className="flex items-center justify-between text-[11px] font-bold">
+          <span className="text-accent-ai flex items-center gap-1">
+            <TrendingUp className="w-3 h-3" />
+            <span>{activeTeams[0]} {wp1}%</span>
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
+            Win Probability
+          </span>
+          <span className="text-amber-400">
+            {wp2}% {activeTeams[1]}
+          </span>
+        </div>
+
+        <div className="w-full bg-surface-raised h-2 rounded-full overflow-hidden border border-theme/60 flex">
+          <div
+            className="h-full bg-gradient-to-r from-accent to-accent-ai transition-all duration-700 ease-out"
+            style={{ width: `${wp1}%` }}
+          />
+          <div
+            className="h-full bg-gradient-to-r from-amber-500/80 to-amber-400 transition-all duration-700 ease-out"
+            style={{ width: `${wp2}%` }}
+          />
+        </div>
       </div>
 
       {/* Status line & Catch me up button */}

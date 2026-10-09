@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Key, Sparkles, Check, ExternalLink, ShieldCheck, Trash2, Eye, EyeOff } from "lucide-react";
+import { X, Key, Sparkles, Check, ExternalLink, ShieldCheck, Trash2, Eye, EyeOff, Activity, AlertCircle } from "lucide-react";
 
 interface ApiKeyModalProps {
   isOpen: boolean;
@@ -24,13 +24,63 @@ export function ApiKeyModal({
   const [selectedModel, setSelectedModel] = useState(geminiModel || "gemini-2.0-flash");
   const [showKey, setShowKey] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   useEffect(() => {
     setInputKey(geminiKey);
     setSelectedModel(geminiModel || "gemini-2.0-flash");
+    setTestResult(null);
   }, [geminiKey, geminiModel, isOpen]);
 
   if (!isOpen) return null;
+
+  const handleTestKey = async () => {
+    if (!inputKey.trim()) {
+      setTestResult({ ok: false, message: "Please enter a key to test." });
+      return;
+    }
+
+    setIsTesting(true);
+    setTestResult(null);
+    const start = performance.now();
+
+    try {
+      const res = await fetch("/api/explain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "question",
+          text: "What is cricket?",
+          language: "en",
+          geminiApiKey: inputKey.trim(),
+          geminiModel: selectedModel,
+        }),
+      });
+
+      const elapsed = Math.round(performance.now() - start);
+
+      if (res.ok) {
+        setTestResult({
+          ok: true,
+          message: `Connection successful! ${selectedModel} responded in ${elapsed}ms`,
+        });
+      } else {
+        const errorJson = await res.json().catch(() => null);
+        setTestResult({
+          ok: false,
+          message: errorJson?.error || `Server responded with code ${res.status}`,
+        });
+      }
+    } catch (err: unknown) {
+      setTestResult({
+        ok: false,
+        message: err instanceof Error ? err.message : "Network error testing API key",
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +94,7 @@ export function ApiKeyModal({
 
   const handleClear = () => {
     setInputKey("");
+    setTestResult(null);
     onClearKey();
   };
 
@@ -56,7 +107,7 @@ export function ApiKeyModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-surface border border-theme rounded-2xl p-5 sm:p-6 shadow-2xl relative space-y-5 animate-scale-up"
+        className="w-full max-w-md bg-surface border border-theme rounded-2xl p-5 sm:p-6 shadow-2xl relative space-y-4 animate-scale-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -70,7 +121,7 @@ export function ApiKeyModal({
                 Google Gemini AI Setup
               </h2>
               <p className="text-xs text-text-muted">
-                Power Match Buddy across all sports & teams
+                Power Match Buddy across all sports &amp; teams
               </p>
             </div>
           </div>
@@ -101,38 +152,41 @@ export function ApiKeyModal({
           <div className="flex-1">
             {geminiKey ? (
               <span className="font-semibold text-emerald-300">
-                Gemini AI Connected (Streaming Active)
+                Gemini AI Connected (Live Streaming Active)
               </span>
             ) : (
               <span>
-                No custom key entered — using grounded sports database & verified fallbacks.
+                No custom key entered — using grounded sports database &amp; verified fallbacks.
               </span>
             )}
           </div>
         </div>
 
         {/* Input Form */}
-        <form onSubmit={handleSave} className="space-y-4">
+        <form onSubmit={handleSave} className="space-y-3.5">
           <div className="space-y-1.5">
-            <label htmlFor="gemini-key-input" className="text-xs font-semibold text-foreground flex items-center justify-between">
-              <span>Gemini API Key</span>
+            <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+              <label htmlFor="gemini-key-input">Gemini API Key</label>
               <a
                 href="https://aistudio.google.com/apikey"
                 target="_blank"
                 rel="noreferrer"
                 className="text-[11px] text-accent-ai hover:underline flex items-center gap-1 font-normal"
               >
-                <span>Get free key</span>
+                <span>Get free key from Google</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
-            </label>
+            </div>
 
             <div className="relative">
               <input
                 id="gemini-key-input"
                 type={showKey ? "text" : "password"}
                 value={inputKey}
-                onChange={(e) => setInputKey(e.target.value)}
+                onChange={(e) => {
+                  setInputKey(e.target.value);
+                  setTestResult(null);
+                }}
                 placeholder="AIzaSy..."
                 className="w-full h-11 px-3.5 pr-10 rounded-xl bg-surface-raised border border-theme text-foreground placeholder:text-text-muted text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent-ai"
               />
@@ -146,7 +200,7 @@ export function ApiKeyModal({
               </button>
             </div>
             <p className="text-[11px] text-text-muted">
-              Key is stored in your browser&apos;s localStorage and sent securely to Google Gemini.
+              Key is stored locally in your browser and used securely for live sports answers.
             </p>
           </div>
 
@@ -161,14 +215,44 @@ export function ApiKeyModal({
               onChange={(e) => setSelectedModel(e.target.value)}
               className="w-full h-10 px-3 rounded-xl bg-surface-raised border border-theme text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-accent-ai cursor-pointer"
             >
-              <option value="gemini-2.0-flash">gemini-2.0-flash (Recommended: Ultra-fast streaming)</option>
-              <option value="gemini-1.5-flash">gemini-1.5-flash (Fast & lightweight)</option>
-              <option value="gemini-1.5-pro">gemini-1.5-pro (Deep complex reasoning)</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash (Recommended: Instant Streaming)</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash (Fast &amp; Efficient)</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (High Reasoning Depth)</option>
             </select>
           </div>
 
+          {/* Test Connection Button & Result Feedback */}
+          <div className="space-y-2 pt-1">
+            <button
+              type="button"
+              onClick={handleTestKey}
+              disabled={isTesting || !inputKey.trim()}
+              className="w-full h-9 rounded-xl bg-surface-raised border border-theme hover:border-accent-ai/50 text-foreground text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Activity className={`w-3.5 h-3.5 text-accent-ai ${isTesting ? "animate-spin" : ""}`} />
+              <span>{isTesting ? "Testing Connection..." : "Test Key Connection"}</span>
+            </button>
+
+            {testResult && (
+              <div
+                className={`p-2.5 rounded-xl border text-[11px] flex items-center gap-2 animate-fade-in ${
+                  testResult.ok
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                    : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                }`}
+              >
+                {testResult.ok ? (
+                  <Check className="w-3.5 h-3.5 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                )}
+                <span>{testResult.message}</span>
+              </div>
+            )}
+          </div>
+
           {/* Actions */}
-          <div className="flex items-center gap-2 pt-2">
+          <div className="flex items-center gap-2 pt-1">
             <button
               type="submit"
               disabled={saveSuccess}
@@ -182,7 +266,7 @@ export function ApiKeyModal({
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Save & Connect Gemini</span>
+                  <span>Save &amp; Connect Gemini</span>
                 </>
               )}
             </button>
@@ -201,7 +285,7 @@ export function ApiKeyModal({
         </form>
 
         {/* Security badge note */}
-        <div className="flex items-center gap-1.5 text-[11px] text-text-muted justify-center border-t border-theme/40 pt-3">
+        <div className="flex items-center gap-1.5 text-[11px] text-text-muted justify-center border-t border-theme/40 pt-2.5">
           <ShieldCheck className="w-3.5 h-3.5 text-accent-ai" />
           <span>Works for any sport, any team, and casual fan explanations.</span>
         </div>

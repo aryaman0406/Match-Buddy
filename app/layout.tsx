@@ -9,16 +9,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Match Buddy | AI Live Cricket Companion",
+  title: "Match Buddy | AI Live Sports Companion",
   description:
-    "Your intelligent cricket companion for live matches. Instant, friendly 2-line explanations in simple English and Hinglish tailored for casual fans.",
+    "Your intelligent companion for live sports — Cricket, Football, Basketball, Tennis, F1, Kabaddi, and custom matches. Instant, friendly explanations in English and Hinglish.",
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏏</text></svg>",
+    icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏆</text></svg>",
   },
   openGraph: {
-    title: "Match Buddy — Live Cricket AI Companion",
+    title: "Match Buddy — Live Sports AI Companion",
     description:
-      "Tired of feeling clueless during matches? Tap any player or rule to get instant 2-line explanations in English or Hinglish.",
+      "Tired of feeling clueless during matches? Tap any player, event, or rule to get instant explanations in English or Hinglish across any sport.",
     url: "https://match-buddy.vercel.app",
     siteName: "Match Buddy",
     type: "website",
@@ -26,9 +26,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Match Buddy — Live Cricket AI Companion",
+    title: "Match Buddy — Live Sports AI Companion",
     description:
-      "Your intelligent cricket companion for live matches. Instant, friendly explanations in English and Hinglish.",
+      "Your intelligent sports companion for live matches. Instant, friendly explanations in English and Hinglish.",
   },
 };
 

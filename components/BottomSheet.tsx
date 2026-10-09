@@ -303,8 +303,13 @@ export function BottomSheet({
               >
                 {isSpeaking ? (
                   <>
-                    <VolumeX className="w-4 h-4 animate-pulse" />
+                    <VolumeX className="w-4 h-4 text-white" />
                     <span>Stop</span>
+                    <div className="flex items-center gap-0.5 ml-0.5">
+                      <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
+                      <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse delay-75" />
+                      <span className="w-0.5 h-2 bg-white rounded-full animate-pulse delay-150" />
+                    </div>
                   </>
                 ) : (
                   <>
