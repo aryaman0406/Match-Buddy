@@ -3,13 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   X,
-  Sparkles,
   Volume2,
   VolumeX,
   Copy,
   Check,
   Share2,
   AlertCircle,
+  Lightbulb,
 } from "lucide-react";
 
 export interface BottomSheetData {
@@ -59,7 +59,6 @@ export function BottomSheet({
           onClose();
         }
 
-        // Focus trap
         if (e.key === "Tab" && sheetRef.current) {
           const focusable = sheetRef.current.querySelectorAll<HTMLElement>(
             'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -82,7 +81,6 @@ export function BottomSheet({
       document.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden";
 
-      // Focus close button initially
       setTimeout(() => {
         sheetRef.current?.focus();
       }, 50);
@@ -90,9 +88,7 @@ export function BottomSheet({
       return () => {
         document.removeEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "";
-        // Return focus to trigger
         previouslyFocusedElement.current?.focus();
-        // Stop speaking if speech synthesis is running
         if (typeof window !== "undefined" && "speechSynthesis" in window) {
           window.speechSynthesis.cancel();
         }
@@ -132,7 +128,6 @@ export function BottomSheet({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback copy
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -140,12 +135,11 @@ export function BottomSheet({
 
   // WhatsApp share
   const handleShare = () => {
-    const textToShare = `🏆 *Match Buddy AI Insights*\n\n*${data?.title}*\n${streamedText}\n\n_Shared from Match Buddy - AI Live Sports Companion_`;
+    const textToShare = `🏆 *Match Buddy Insights*\n\n*${data?.title}*\n${streamedText}\n\n_Shared from Match Buddy_`;
     const url = `https://wa.me/?text=${encodeURIComponent(textToShare)}`;
     window.open(url, "_blank");
   };
 
-  // Touch handlers for swipe-down to dismiss
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
   };
@@ -179,7 +173,7 @@ export function BottomSheet({
       {/* Dimmed backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-black/65 backdrop-blur-sm transition-opacity duration-200"
+        className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity duration-200"
         aria-hidden="true"
       />
 
@@ -192,41 +186,40 @@ export function BottomSheet({
         onTouchEnd={handleTouchEnd}
         style={{
           transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
-          transition: dragOffset > 0 ? "none" : "transform 250ms ease-out",
+          transition: dragOffset > 0 ? "none" : "transform 240ms ease-out",
         }}
-        className="w-full max-w-[480px] bg-surface-raised border-t border-x border-theme rounded-t-3xl shadow-2xl z-10 animate-slide-up flex flex-col max-h-[85vh] overflow-hidden focus:outline-none"
+        className="w-full max-w-[480px] bg-surface border-t border-white/[0.12] rounded-t-[32px] shadow-[0_-12px_48px_rgba(0,0,0,0.6)] z-10 animate-slide-up flex flex-col max-h-[85vh] overflow-hidden focus:outline-none"
       >
         {/* Drag handle */}
-        <div className="w-full pt-3 pb-2 flex justify-center cursor-grab active:cursor-grabbing">
-          <div className="w-12 h-1.5 rounded-full bg-border hover:bg-text-muted transition-colors" />
+        <div className="w-full pt-3 pb-1 flex justify-center cursor-grab active:cursor-grabbing">
+          <div className="w-10 h-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors" />
         </div>
 
-        {/* Header bar: Title, AI chip, and Close button */}
-        <div className="px-5 pb-3 pt-1 flex items-start justify-between gap-3 border-b border-theme/60">
+        {/* Header bar */}
+        <div className="px-5 pb-3.5 pt-1.5 flex items-start justify-between gap-3 border-b border-white/[0.06]">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-accent-ai/15 text-accent-ai border border-accent-ai/30 uppercase tracking-wider">
-                <Sparkles className="w-3 h-3 text-accent-ai" />
-                <span>AI</span>
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-text-muted uppercase tracking-wider">
+                Match Intel
               </span>
 
               {isFallback && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
                   <AlertCircle className="w-2.5 h-2.5" />
-                  <span>Saved Fact</span>
+                  <span>Verified Offline Fact</span>
                 </span>
               )}
             </div>
 
             <h3
               id="sheet-title"
-              className="text-lg font-bold text-foreground leading-snug truncate"
+              className="text-lg font-black text-foreground leading-snug truncate tracking-tight"
             >
               {data.title}
             </h3>
 
             {data.subtitle && (
-              <p className="text-xs text-text-muted mt-0.5 truncate">
+              <p className="text-xs text-text-muted mt-0.5 truncate font-medium">
                 {data.subtitle}
               </p>
             )}
@@ -236,22 +229,14 @@ export function BottomSheet({
             type="button"
             onClick={onClose}
             aria-label="Close bottom sheet"
-            className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl bg-surface border border-theme flex items-center justify-center text-text-muted hover:text-foreground hover:bg-surface-raised transition-colors active:scale-90 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] flex items-center justify-center text-text-muted hover:text-foreground transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content body with custom scroll */}
+        {/* Content body */}
         <div className="px-5 py-4 overflow-y-auto space-y-4 flex-1">
-          {/* Fallback Notice Banner */}
-          {isFallback && (
-            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2 text-xs text-amber-300">
-              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
-              <span>Showing a saved explanation (AI unavailable right now).</span>
-            </div>
-          )}
-
           {/* Answer Area */}
           <div
             aria-live="polite"
@@ -259,51 +244,51 @@ export function BottomSheet({
             className="text-foreground text-sm leading-relaxed min-h-[56px]"
           >
             {isLoading && !streamedText ? (
-              /* Shimmer skeleton lines */
               <div className="space-y-2.5 py-1">
                 <div className="h-4 w-full rounded-md animate-shimmer" />
                 <div className="h-4 w-5/6 rounded-md animate-shimmer" />
                 <div className="h-4 w-3/4 rounded-md animate-shimmer" />
               </div>
             ) : (
-              <p className="whitespace-pre-line font-medium selection:bg-accent-ai/30">
+              <p className="whitespace-pre-line font-medium selection:bg-indigo-500/30 text-foreground/95">
                 {streamedText}
                 {isLoading && (
-                  <span className="inline-block w-1.5 h-4 ml-1 bg-accent-ai animate-pulse align-middle" />
+                  <span className="inline-block w-1.5 h-4 ml-1 bg-indigo-400 animate-pulse align-middle" />
                 )}
               </p>
             )}
           </div>
 
-          {/* "Why it matters now" highlighted box with purple left border */}
+          {/* "Why it matters now" highlighted contextual box */}
           {data.whyItMatters && (
-            <div className="ai-generated-box p-3 rounded-r-xl space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-accent-ai block">
-                Why it matters right now
+            <div className="context-highlight-box p-3.5 rounded-2xl space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                <Lightbulb className="w-3.5 h-3.5" />
+                <span>Tactical Context</span>
               </span>
-              <p className="text-xs text-foreground/90 font-medium leading-relaxed">
+              <p className="text-xs text-foreground/90 font-medium leading-relaxed pl-5">
                 {data.whyItMatters}
               </p>
             </div>
           )}
 
-          {/* Action Tools: Voice, Copy, WhatsApp Share */}
-          <div className="pt-2 flex items-center justify-between border-t border-theme/60">
+          {/* Action Tools */}
+          <div className="pt-2 flex items-center justify-between border-t border-white/[0.06]">
             <div className="flex items-center gap-2">
               {/* Speaker / Read Aloud */}
               <button
                 type="button"
                 onClick={handleToggleSpeech}
-                aria-label={isSpeaking ? "Stop reading" : "Read explanation aloud"}
-                className={`flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 ${
+                aria-label={isSpeaking ? "Stop audio commentary" : "Listen to audio commentary"}
+                className={`flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 ${
                   isSpeaking
-                    ? "bg-accent-ai text-white border-accent-ai shadow-sm"
-                    : "bg-surface border-theme text-text-muted hover:text-foreground"
+                    ? "bg-indigo-500 text-white border-indigo-500 shadow-sm"
+                    : "bg-white/[0.05] border-white/[0.08] text-text-muted hover:text-foreground"
                 }`}
               >
                 {isSpeaking ? (
                   <>
-                    <VolumeX className="w-4 h-4 text-white" />
+                    <VolumeX className="w-3.5 h-3.5 text-white" />
                     <span>Stop</span>
                     <div className="flex items-center gap-0.5 ml-0.5">
                       <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
@@ -313,7 +298,7 @@ export function BottomSheet({
                   </>
                 ) : (
                   <>
-                    <Volume2 className="w-4 h-4" />
+                    <Volume2 className="w-3.5 h-3.5" />
                     <span>Listen</span>
                   </>
                 )}
@@ -324,16 +309,16 @@ export function BottomSheet({
                 type="button"
                 onClick={handleCopy}
                 aria-label="Copy explanation"
-                className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-xl bg-surface border border-theme text-text-muted hover:text-foreground text-xs font-semibold transition-all cursor-pointer active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-xl bg-white/[0.05] border border-white/[0.08] text-text-muted hover:text-foreground text-xs font-semibold transition-all cursor-pointer active:scale-95"
               >
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    <span className="text-emerald-400">Copied!</span>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-emerald-400">Copied</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-4 h-4" />
+                    <Copy className="w-3.5 h-3.5" />
                     <span>Copy</span>
                   </>
                 )}
@@ -344,23 +329,22 @@ export function BottomSheet({
                 type="button"
                 onClick={handleShare}
                 aria-label="Share on WhatsApp"
-                className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-xl bg-surface border border-theme text-text-muted hover:text-foreground text-xs font-semibold transition-all cursor-pointer active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-xl bg-white/[0.05] border border-white/[0.08] text-text-muted hover:text-foreground text-xs font-semibold transition-all cursor-pointer active:scale-95"
               >
-                <Share2 className="w-4 h-4 text-emerald-500" />
+                <Share2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Share</span>
               </button>
             </div>
 
-            {/* Language indicator pill */}
-            <span className="text-[10px] font-semibold text-text-muted uppercase px-2 py-1 rounded bg-surface border border-theme">
+            <span className="text-[10px] font-bold text-text-muted uppercase px-2 py-1 rounded-lg bg-white/[0.05] border border-white/[0.06]">
               {language === "hinglish" ? "Hinglish" : "English"}
             </span>
           </div>
 
-          {/* AI Disclaimer Note */}
+          {/* Clean footer line */}
           <div className="text-center pt-1 pb-1">
-            <p className="text-[10px] text-text-muted/80">
-              ⚡ AI-generated, may contain errors. Grounded in verified match facts.
+            <p className="text-[10px] text-text-muted/70 font-medium">
+              Grounded in verified live match data &amp; tactical context.
             </p>
           </div>
         </div>

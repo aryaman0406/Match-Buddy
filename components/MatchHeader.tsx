@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Play, Pause, TrendingUp } from "lucide-react";
+import { Play, Pause, Radio, ChevronRight, Activity } from "lucide-react";
 import { MatchSituation } from "@/data/match";
 
 interface MatchHeaderProps {
@@ -33,9 +33,8 @@ export function MatchHeader({
   isSimulating,
   onToggleSimulation,
 }: MatchHeaderProps) {
-  // Compute display values
   const activeTeams = teams || matchData?.teams || ["IND", "AUS"];
-  const activeLeague = seriesOrLeague || matchData?.series || "Live Match";
+  const activeLeague = seriesOrLeague || matchData?.series || "Live Championship";
 
   const primaryScore = scoreDisplay?.primary || matchData?.score || "112/3";
   const primaryLabel = scoreDisplay?.primaryLabel || activeTeams[0];
@@ -58,119 +57,130 @@ export function MatchHeader({
   const wp2 = winProbability?.team2 ?? 36;
 
   return (
-    <section className="w-full bg-surface border border-theme rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 transition-all">
-      {/* Top row: Series badge, Live status, and Simulation toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {/* Pulsing LIVE badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/15 border border-accent/30 text-accent font-bold text-xs uppercase tracking-wide">
-            <span className="w-2 h-2 rounded-full bg-accent animate-live-pulse" />
+    <section className="w-full glass-panel rounded-3xl p-4 sm:p-5 shadow-xl space-y-4 relative overflow-hidden">
+      {/* Top ambient illumination */}
+      <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+
+      {/* Row 1: League & Broadcast Controls */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          {/* Live indicator badge */}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-400 font-bold text-[10px] tracking-wider uppercase shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-live-pulse" />
             <span>LIVE</span>
           </div>
 
-          <span className="text-xs font-semibold text-text-muted truncate max-w-[190px] xs:max-w-none">
-            {activeTeams[0]} vs {activeTeams[1]} · {activeLeague}
+          <span className="text-xs font-semibold text-text-muted truncate">
+            {activeLeague}
           </span>
         </div>
 
-        {/* Live Simulation Play/Pause button */}
+        {/* Live Match Simulation Toggle */}
         <button
           type="button"
           onClick={onToggleSimulation}
-          title={isSimulating ? "Pause live match simulation" : "Start live match simulation"}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer min-h-[36px] ${
+          title={isSimulating ? "Pause live match feed" : "Simulate live match play-by-play"}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer min-h-[32px] shrink-0 ${
             isSimulating
-              ? "bg-accent-ai/10 border-accent-ai/40 text-accent-ai animate-pulse"
-              : "bg-surface-raised border-theme text-text-muted hover:text-foreground"
+              ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-400 shadow-sm"
+              : "bg-surface-raised/80 border-theme text-text-muted hover:text-foreground hover:border-white/20"
           }`}
           aria-label={isSimulating ? "Pause match simulation" : "Simulate live match"}
         >
           {isSimulating ? (
             <>
-              <Pause className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline">Auto-Ticking</span>
+              <Pause className="w-3 h-3 text-indigo-400 animate-pulse" />
+              <span>Ticking Live</span>
             </>
           ) : (
             <>
-              <Play className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline">Simulate Live</span>
+              <Play className="w-3 h-3 text-indigo-400" />
+              <span>Simulate</span>
             </>
           )}
         </button>
       </div>
 
-      {/* Score and Progress row */}
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="flex items-baseline gap-2">
-          <span className="text-[34px] xs:text-[40px] leading-none font-extrabold tracking-tight tabular-nums text-foreground">
-            {primaryScore}
-          </span>
-          <span className="text-sm font-semibold text-text-muted">
-            {primaryLabel}
-          </span>
+      {/* Row 2: Teams & Main Broadcast Scoreboard */}
+      <div className="flex items-end justify-between gap-4 pt-1 pb-1">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
+              {activeTeams[0]} vs {activeTeams[1]}
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl sm:text-5xl font-black tracking-tight tabular-nums text-foreground">
+              {primaryScore}
+            </span>
+            <span className="text-sm font-bold text-text-muted">
+              {primaryLabel}
+            </span>
+          </div>
         </div>
 
-        <div className="text-right shrink-0">
-          <span className="text-xs font-medium text-text-muted block">
-            {sportName} Progress
+        <div className="text-right space-y-0.5 shrink-0">
+          <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
+            {sportName} Status
           </span>
-          <span className="text-sm xs:text-base font-bold tabular-nums text-foreground">
+          <span className="text-base sm:text-lg font-bold tabular-nums text-foreground block">
             {progressLabel}
           </span>
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="w-full bg-surface-raised h-1.5 rounded-full overflow-hidden border border-theme/60">
+      {/* Progress Bar with neon gradient */}
+      <div className="w-full bg-white/[0.04] h-1.5 rounded-full overflow-hidden border border-white/[0.06]">
         <div
-          className="h-full bg-gradient-to-r from-accent to-accent-ai transition-all duration-500 ease-out"
+          className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-rose-500 transition-all duration-700 ease-out"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
 
-      {/* Win Probability Live Bar */}
-      <div className="space-y-1.5 bg-surface-raised/40 p-2.5 rounded-xl border border-theme/50">
-        <div className="flex items-center justify-between text-[11px] font-bold">
-          <span className="text-accent-ai flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" />
+      {/* Row 3: Live Win Probability Bar (Broadcast Style) */}
+      <div className="space-y-1.5 bg-black/25 p-3 rounded-2xl border border-white/[0.05]">
+        <div className="flex items-center justify-between text-xs font-bold">
+          <span className="text-indigo-400 flex items-center gap-1 font-semibold">
+            <Activity className="w-3 h-3 text-indigo-400" />
             <span>{activeTeams[0]} {wp1}%</span>
           </span>
-          <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
+          <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">
             Win Probability
           </span>
-          <span className="text-amber-400">
+          <span className="text-amber-400 font-semibold">
             {wp2}% {activeTeams[1]}
           </span>
         </div>
 
-        <div className="w-full bg-surface-raised h-2 rounded-full overflow-hidden border border-theme/60 flex">
+        <div className="w-full bg-white/[0.04] h-2 rounded-full overflow-hidden border border-white/[0.06] flex">
           <div
-            className="h-full bg-gradient-to-r from-accent to-accent-ai transition-all duration-700 ease-out"
+            className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-700 ease-out"
             style={{ width: `${wp1}%` }}
           />
           <div
-            className="h-full bg-gradient-to-r from-amber-500/80 to-amber-400 transition-all duration-700 ease-out"
+            className="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-700 ease-out"
             style={{ width: `${wp2}%` }}
           />
         </div>
       </div>
 
-      {/* Status line & Catch me up button */}
-      <div className="pt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-theme/60">
-        <div className="text-xs sm:text-sm font-medium text-text-muted">
+      {/* Row 4: Chase context line & "Catch me up" Action */}
+      <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-white/[0.06]">
+        <p className="text-xs font-medium text-text-muted leading-relaxed">
           {secondaryStatus}
-        </div>
+        </p>
 
-        {/* "Just joined? Catch me up" button */}
+        {/* Catch me up story button */}
         <button
           type="button"
           onClick={onOpenStorySoFar}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-accent-ai/15 hover:bg-accent-ai/25 border border-accent-ai/35 text-accent-ai text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 cursor-pointer min-h-[44px]"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-bold tracking-wide transition-all duration-150 active:scale-95 cursor-pointer min-h-[40px] shrink-0"
           id="catch-me-up-btn"
           aria-label="Catch me up with the match story so far"
         >
-          <Sparkles className="w-3.5 h-3.5 text-accent-ai animate-spin-slow" />
-          <span>Just joined? Catch me up</span>
+          <Radio className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Match Recap</span>
+          <ChevronRight className="w-3.5 h-3.5 text-indigo-400/80" />
         </button>
       </div>
     </section>

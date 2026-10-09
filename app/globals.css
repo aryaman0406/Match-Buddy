@@ -1,33 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0B0E14;
-  --surface: #141925;
-  --surface-raised: #1C2333;
-  --border: #262E42;
-  --text: #F2F4F8;
-  --text-muted: #8A93A8;
-  --accent: #FF3B4E;
-  --accent-ai: #7C5CFF;
-  --success: #22C55E;
+  --background: #090B10;
+  --surface: #111520;
+  --surface-raised: #181E2E;
+  --surface-glass: rgba(17, 21, 32, 0.78);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(99, 102, 241, 0.5);
+  --text: #F8FAFC;
+  --text-muted: #94A3B8;
+  --accent: #EF4444;
+  --accent-ai: #6366F1;
+  --accent-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  --success: #10B981;
   --warning: #F59E0B;
-  --wicket: #EF4444;
+  --wicket: #F43F5E;
+  --card-glow: rgba(99, 102, 241, 0.08);
 
   color-scheme: dark;
 }
 
 [data-theme="light"] {
-  --background: #F5F6F8;
+  --background: #F8FAFC;
   --surface: #FFFFFF;
-  --surface-raised: #FFFFFF;
-  --border: #E3E6EC;
-  --text: #12151C;
-  --text-muted: #5F6778;
-  --accent: #E5263B;
-  --accent-ai: #6342E8;
-  --success: #15803D;
-  --warning: #B45309;
-  --wicket: #DC2626;
+  --surface-raised: #F1F5F9;
+  --surface-glass: rgba(255, 255, 255, 0.85);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-focus: rgba(79, 70, 229, 0.4);
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --accent: #DC2626;
+  --accent-ai: #4F46E5;
+  --accent-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  --success: #059669;
+  --warning: #D97706;
+  --wicket: #E11D48;
+  --card-glow: rgba(79, 70, 229, 0.06);
 
   color-scheme: light;
 }
@@ -50,6 +58,7 @@
 .bg-background { background-color: var(--background); }
 .bg-surface { background-color: var(--surface); }
 .bg-surface-raised { background-color: var(--surface-raised); }
+.bg-surface-glass { background-color: var(--surface-glass); }
 
 .text-foreground { color: var(--text); }
 .text-muted { color: var(--text-muted); }
@@ -63,17 +72,42 @@
 .border-accent { border-color: var(--accent); }
 .border-accent-ai { border-color: var(--accent-ai); }
 
-/* Rule: Anything written by AI gets a purple AI chip and a purple left border */
-.ai-generated-box {
-  border-left: 3px solid var(--accent-ai);
-  background: color-mix(in srgb, var(--accent-ai) 8%, var(--surface));
+/* Premium frosted glass card */
+.glass-panel {
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-panel-interactive {
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-interactive:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Elegant contextual highlight box */
+.context-highlight-box {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(139, 92, 246, 0.02) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 1rem;
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Shimmer animation for loading skeleton */
+/* Subtle Shimmer animation for loading skeleton */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -86,12 +120,12 @@
 .animate-shimmer {
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--surface-raised) 70%, transparent) 0%,
-    color-mix(in srgb, var(--border) 90%, transparent) 50%,
-    color-mix(in srgb, var(--surface-raised) 70%, transparent) 100%
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.02) 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.8s infinite linear;
+  animation: shimmer 1.6s infinite linear;
 }
 
 /* Bottom sheet slide animation */
@@ -107,7 +141,7 @@
 }
 
 .animate-slide-up {
-  animation: slideUp 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Pulse animation for LIVE badge */
@@ -117,29 +151,29 @@
     transform: scale(1);
   }
   50% {
-    opacity: 0.4;
-    transform: scale(1.15);
+    opacity: 0.35;
+    transform: scale(1.2);
   }
 }
 
 .animate-live-pulse {
-  animation: livePulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Slow spin */
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 8s linear infinite;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -147,7 +181,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
 }
 
@@ -158,4 +192,8 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   overflow-x: hidden;
   transition: background-color 0.2s ease, color 0.2s ease;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.12), transparent),
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(16, 185, 129, 0.05), transparent);
+  background-attachment: fixed;
 }

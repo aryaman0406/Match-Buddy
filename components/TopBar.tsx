@@ -26,43 +26,40 @@ export function TopBar({
   onPersonaChange,
 }: TopBarProps) {
   return (
-    <header className="w-full flex items-center justify-between py-2.5 px-3 border-b border-theme bg-surface/90 backdrop-blur-md sticky top-0 z-30 transition-colors">
+    <header className="w-full flex items-center justify-between py-2.5 px-3.5 border-b border-white/[0.07] bg-surface-glass/95 backdrop-blur-xl sticky top-0 z-30 transition-colors">
       {/* Brand logo & icon */}
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-accent to-accent-ai/80 flex items-center justify-center shadow-sm text-base select-none ring-1 ring-white/10 shrink-0">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-base select-none shrink-0 shadow-sm">
           {currentSportIcon}
         </div>
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="font-extrabold text-sm tracking-tight text-foreground">
+            <span className="font-black text-sm tracking-tight text-foreground">
               Match Buddy
-            </span>
-            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-accent-ai/15 text-accent-ai border border-accent-ai/30 uppercase tracking-wider">
-              AI
             </span>
           </div>
           <p className="text-[10px] text-text-muted hidden xs:block font-medium">
-            Live sports companion for casual fans
+            Live Sports Companion
           </p>
         </div>
       </div>
 
-      {/* Action controls: Persona selector, Gemini Key, Language toggle, Theme */}
-      <div className="flex items-center gap-1.5">
+      {/* Action controls */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Persona Mode selector */}
         <div className="relative">
           <select
             value={persona}
             onChange={(e) => onPersonaChange(e.target.value as PersonaMode)}
-            title="Choose AI companion persona / tone"
-            aria-label="AI companion tone"
-            className="h-8 pl-2 pr-5 rounded-xl bg-surface-raised border border-theme text-foreground text-[11px] font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent-ai appearance-none shadow-sm"
+            title="Choose companion persona / tone"
+            aria-label="Companion tone"
+            className="h-8 pl-2.5 pr-6 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-foreground text-[11px] font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500/50 appearance-none shadow-sm transition-colors"
           >
-            <option value="casual">🤝 Casual</option>
-            <option value="analyst">🧠 Analyst</option>
-            <option value="desi">🇮🇳 Desi</option>
+            <option value="casual" className="bg-[#111520] text-white">🤝 Casual</option>
+            <option value="analyst" className="bg-[#111520] text-white">🧠 Analyst</option>
+            <option value="desi" className="bg-[#111520] text-white">🇮🇳 Desi</option>
           </select>
-          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-[8px] text-text-muted">
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[8px] text-text-muted">
             ▾
           </span>
         </div>
@@ -72,15 +69,15 @@ export function TopBar({
           type="button"
           onClick={onOpenApiKeyModal}
           title="Configure Google Gemini API Key"
-          className={`flex items-center gap-1 px-2 py-1 min-h-[32px] rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+          className={`flex items-center gap-1 px-2.5 py-1 min-h-[32px] rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
             hasGeminiKey
               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
-              : "bg-surface-raised border-theme text-text-muted hover:text-foreground hover:border-accent-ai/40"
+              : "bg-white/[0.05] border-white/[0.08] text-text-muted hover:text-foreground hover:border-white/20"
           }`}
         >
-          <Key className="w-3 h-3 text-accent-ai" />
+          <Key className="w-3 h-3 text-indigo-400" />
           <span className="hidden sm:inline">
-            {hasGeminiKey ? "Gemini ⚡" : "Gemini Key"}
+            {hasGeminiKey ? "Gemini ⚡" : "API Key"}
           </span>
           <span
             className={`w-1.5 h-1.5 rounded-full ${
@@ -93,15 +90,15 @@ export function TopBar({
         <div
           role="group"
           aria-label="Language selection"
-          className="bg-surface-raised border border-theme p-0.5 rounded-xl flex items-center shadow-inner"
+          className="bg-white/[0.05] border border-white/[0.08] p-0.5 rounded-xl flex items-center shadow-inner"
         >
           <button
             type="button"
             onClick={() => onLanguageChange("en")}
             aria-pressed={language === "en"}
-            className={`px-2 py-1 min-h-[30px] rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+            className={`px-2.5 py-1 min-h-[28px] rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
               language === "en"
-                ? "bg-accent-ai text-white shadow-sm"
+                ? "bg-indigo-500 text-white shadow-sm"
                 : "text-text-muted hover:text-foreground"
             }`}
           >
@@ -111,9 +108,9 @@ export function TopBar({
             type="button"
             onClick={() => onLanguageChange("hinglish")}
             aria-pressed={language === "hinglish"}
-            className={`px-2 py-1 min-h-[30px] rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+            className={`px-2.5 py-1 min-h-[28px] rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
               language === "hinglish"
-                ? "bg-accent-ai text-white shadow-sm"
+                ? "bg-indigo-500 text-white shadow-sm"
                 : "text-text-muted hover:text-foreground"
             }`}
           >

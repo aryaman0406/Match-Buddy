@@ -17,7 +17,6 @@ import {
   MatchEvent,
   MatchSituation,
 } from "@/data/match";
-import { Sparkles, Info, X } from "lucide-react";
 
 export default function Home() {
   // Language & Persona state
@@ -47,8 +46,6 @@ export default function Home() {
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [, setSimulationIndex] = useState<number>(0);
 
-  // Quick Demo tips bar visibility
-  const [showDemoTip, setShowDemoTip] = useState<boolean>(true);
 
   // BottomSheet & AI streaming state
   const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
@@ -468,26 +465,6 @@ export default function Home() {
           />
         </div>
 
-        {/* Demo Quick Tour Tip banner */}
-        {showDemoTip && (
-          <div className="mx-3 mt-2 p-2.5 rounded-xl bg-accent-ai/10 border border-accent-ai/25 flex items-start justify-between gap-2 text-[11px] text-foreground/90 animate-fade-in">
-            <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-accent-ai shrink-0 mt-0.5" />
-              <span>
-                <strong className="text-foreground">Senior Demo Mode:</strong> Tap any player or event for instant AI breakdown · Click <strong className="text-accent-ai">Simulate Live</strong> to watch live score &amp; win probability animate!
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowDemoTip(false)}
-              aria-label="Dismiss demo tip"
-              className="text-text-muted hover:text-foreground p-0.5 cursor-pointer shrink-0"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
         {/* Main Content Area */}
         <div className="p-3.5 sm:p-4 space-y-4">
           {/* Live Match Card with Win Probability Meter */}
@@ -518,12 +495,12 @@ export default function Home() {
             recentEventId={recentEventId}
           />
 
-          <footer className="pt-6 pb-2 text-center border-t border-theme/60 text-text-muted space-y-1">
-            <p className="text-[11px] font-medium">
-              Powered by <span className="text-foreground font-semibold">Google Gemini AI</span> &amp; Match Buddy
+          <footer className="pt-8 pb-3 text-center border-t border-white/[0.06] space-y-1">
+            <p className="text-xs font-bold text-foreground/80 tracking-tight">
+              Match Buddy · Live Sports Companion
             </p>
-            <p className="text-[10px] text-text-muted/80">
-              Universal sports AI companion · Zero hallucination guardrails · English &amp; Hinglish
+            <p className="text-[10px] text-text-muted">
+              Live broadcast stats, tactical intelligence &amp; match recaps
             </p>
           </footer>
         </div>
