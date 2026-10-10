@@ -67,13 +67,20 @@ export default function Home() {
   // Speech state for desktop panel
   const [isSpeakingDesktop, setIsSpeakingDesktop] = useState(false);
 
-  // In-flight request controller
+  // In-flight request controller & timeout tracking
   const abortControllerRef = useRef<AbortController | null>(null);
+  const recentEventTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Stop any active speech synthesis on unmount
+  // Stop active speech synthesis, abort in-flight requests, and clear timers on unmount
   useEffect(() => {
     return () => {
       stopSpeech();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      if (recentEventTimeoutRef.current) {
+        clearTimeout(recentEventTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -109,6 +116,11 @@ export default function Home() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
+    if (recentEventTimeoutRef.current) {
+      clearTimeout(recentEventTimeoutRef.current);
+      recentEventTimeoutRef.current = null;
+    }
+    setRecentEventId(undefined);
     stopSpeech();
     setIsSpeakingDesktop(false);
     setIsSheetOpen(false);
@@ -419,8 +431,12 @@ export default function Home() {
           setRecentEventId(newEvt.id);
           setEventsList((prev) => [newEvt, ...prev.filter((e) => e.id !== newEvt.id)]);
 
-          setTimeout(() => {
+          if (recentEventTimeoutRef.current) {
+            clearTimeout(recentEventTimeoutRef.current);
+          }
+          recentEventTimeoutRef.current = setTimeout(() => {
             setRecentEventId(undefined);
+            recentEventTimeoutRef.current = null;
           }, 3500);
         }
 
@@ -428,7 +444,13 @@ export default function Home() {
       });
     }, 6000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (recentEventTimeoutRef.current) {
+        clearTimeout(recentEventTimeoutRef.current);
+        recentEventTimeoutRef.current = null;
+      }
+    };
   }, [isSimulating, currentMatch]);
 
   const handleToggleSpeechDesktop = () => {
@@ -648,7 +670,7 @@ export default function Home() {
                     Tap any player, event, or rule
                   </h4>
                   <p className="text-xs text-muted max-w-xs leading-relaxed">
-                    Select any batsman or bowler on the pitch, breakdown a match moment, or ask a question below to see instant 2-line AI explanations.
+                    Select any batter or bowler on the pitch, breakdown a match moment, or ask a question below to see instant 2-line AI explanations.
                   </p>
                 </div>
               )}

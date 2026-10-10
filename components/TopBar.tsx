@@ -23,19 +23,30 @@ export function TopBar({
 }: TopBarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const gearBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Close settings popover on outside click
+  // Close settings popover on outside click or Escape key, returning focus
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
         setIsSettingsOpen(false);
       }
     }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsSettingsOpen(false);
+        gearBtnRef.current?.focus();
+      }
+    }
+
     if (isSettingsOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isSettingsOpen]);
 
@@ -96,6 +107,7 @@ export function TopBar({
         {/* Settings gear button & popover */}
         <div className="relative" ref={popoverRef}>
           <button
+            ref={gearBtnRef}
             type="button"
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             aria-label="Settings and companion preferences"
@@ -113,9 +125,12 @@ export function TopBar({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setIsSettingsOpen(false)}
+                  onClick={() => {
+                    setIsSettingsOpen(false);
+                    gearBtnRef.current?.focus();
+                  }}
                   aria-label="Close settings"
-                  className="p-1 text-muted hover:text-foreground"
+                  className="p-1 text-muted hover:text-foreground min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg hover:bg-surface-raised transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>

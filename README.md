@@ -23,7 +23,7 @@
 - **3 Fan Personas:** Casual Fan (friendly & accessible), Tactical Analyst (data & matchups), and Desi Buddy (cricket banter & masala).
 - **Deterministic Win Probability:** A pure mathematical calculation (RRR vs resources in cricket, score difference vs time in football/basketball).
 - **Graceful Offline Fallbacks:** Zero blank screens. If offline, rate-limited, timed out, or unconfigured, the app falls back to curated verified facts with a clear note.
-- **Audio Read-Aloud & WhatsApp Share:** One-tap text-to-speech commentary and formatted match updates to share with friends.
+- **Audio Read-Aloud:** One-tap text-to-speech commentary with native pronunciation and speech queue safeguards.
 - **Desktop & Mobile Responsive:** Centered mobile container on phones; elegant two-column layout on widescreen displays (`≥ 1024px`).
 
 ---
