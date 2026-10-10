@@ -79,7 +79,7 @@ export const footballMatch: SportMatchConfig = {
       ],
       fallbackIntro: {
         en: "Robert Lewandowski is Barcelona's clinical spearhead who pulled one back in the 58th minute with a predator's finish. Needing an equalizer, all of Barça's attacking service is directed into his path.",
-        hinglish: "Lewandowski Barcelona ke clinical striker hain jinhone 58ve minute me goal karke comeback shuru kiya. Barcelona ko barabari ke liye abhi bas unke paas ball supply karni hai.",
+        hinglish: "Lewandowski Barcelona ke clinical striker hain jinhone 58th minute me goal karke comeback shuru kiya. Barça ko barabari ke liye abhi bas un tak achhi ball supply karni hai.",
       },
     },
     {

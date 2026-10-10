@@ -9,13 +9,13 @@ export const cricketMatch: SportMatchConfig = {
   seriesOrLeague: "2nd T20I, Mumbai",
   teams: ["IND", "AUS"],
   teamFullNames: ["India", "Australia"],
-  winProbability: { team1: 64, team2: 36 },
+  winProbability: { team1: 62, team2: 38 },
   scoreDisplay: {
     primary: "112/3",
     primaryLabel: "IND",
     progress: "14.2 / 20 Overs",
     progressPercent: 71,
-    secondaryStatus: "Need 54 off 34 balls · RRR 9.5",
+    secondaryStatus: "Need 54 off 34 balls · RRR 9.53",
   },
   // TODO verify: Cricket player roster
   players: [
@@ -144,7 +144,7 @@ export const cricketMatch: SportMatchConfig = {
     },
   ],
   storyFallback: {
-    en: "Chasing 166, India suffered early blows before Hardik Pandya and Suryakumar Yadav stabilized the chase. Needing 54 off 34 balls at an RRR of 9.5, India hold a slight edge with 7 wickets in hand.",
+    en: "Chasing 166, India suffered early blows before Hardik Pandya and Suryakumar Yadav stabilized the chase. Needing 54 off 34 balls at an RRR of 9.53, India hold a slight edge with 7 wickets in hand.",
     hinglish: "166 runs ke chase me shuruaati jhatkon ke baad Hardik Pandya aur Suryakumar Yadav ne paari ko sambhala hai. India ko 34 balls me 54 runs chahiye aur 7 wickets baaki hain.",
   },
   quickQuestions: ["What is DLS method?", "Explain LBW rule in cricket", "What is a Super Over?", "What is Powerplay?"],

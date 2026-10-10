@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   X,
   Volume2,
@@ -8,7 +8,9 @@ import {
   AlertCircle,
   Lightbulb,
 } from "lucide-react";
-import { speakText, stopSpeech } from "@/lib/speech";
+import { speakText, stopSpeech, isSpeechSupported } from "@/lib/speech";
+
+const emptySubscribe = () => () => {};
 
 export interface BottomSheetData {
   title: string;
@@ -39,6 +41,11 @@ export function BottomSheet({
   language,
 }: BottomSheetProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const speechSupported = useSyncExternalStore(
+    emptySubscribe,
+    () => isSpeechSupported(),
+    () => false
+  );
   const sheetRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
 
@@ -262,34 +269,36 @@ export function BottomSheet({
           {/* Action Tools with >=44px touch targets */}
           <div className="pt-2 flex items-center justify-between border-t border-theme">
             <div className="flex items-center gap-2">
-              {/* Speaker / Read Aloud */}
-              <button
-                type="button"
-                onClick={handleToggleSpeech}
-                aria-label={isSpeaking ? "Stop audio commentary" : "Listen to audio commentary"}
-                className={`flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
-                  isSpeaking
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                    : "bg-surface-raised hover:bg-surface border border-theme text-muted hover:text-foreground shadow-sm"
-                }`}
-              >
-                {isSpeaking ? (
-                  <>
-                    <VolumeX className="w-4 h-4 text-white" />
-                    <span>Stop</span>
-                    <div className="flex items-center gap-0.5 ml-1">
-                      <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
-                      <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse delay-75" />
-                      <span className="w-0.5 h-2 bg-white rounded-full animate-pulse delay-150" />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Volume2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                    <span className="font-semibold">Listen</span>
-                  </>
-                )}
-              </button>
+              {/* Speaker / Read Aloud (hidden if unsupported) */}
+              {speechSupported && (
+                <button
+                  type="button"
+                  onClick={handleToggleSpeech}
+                  aria-label={isSpeaking ? "Stop audio commentary" : "Listen to audio commentary"}
+                  className={`flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                    isSpeaking
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                      : "bg-surface-raised hover:bg-surface border border-theme text-muted hover:text-foreground shadow-sm"
+                  }`}
+                >
+                  {isSpeaking ? (
+                    <>
+                      <VolumeX className="w-4 h-4 text-white" />
+                      <span>Stop</span>
+                      <div className="flex items-center gap-0.5 ml-1">
+                        <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
+                        <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse delay-75" />
+                        <span className="w-0.5 h-2 bg-white rounded-full animate-pulse delay-150" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <span className="font-semibold">Listen</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             <span className="text-xs font-bold text-muted uppercase px-2.5 py-1.5 rounded-lg bg-surface-raised border border-theme">

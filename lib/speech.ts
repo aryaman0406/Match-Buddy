@@ -11,6 +11,20 @@
 
 let activeUtterance: SpeechSynthesisUtterance | null = null;
 let speechHeartbeatInterval: ReturnType<typeof setInterval> | null = null;
+let cachedVoices: SpeechSynthesisVoice[] = [];
+
+if (typeof window !== "undefined" && "speechSynthesis" in window) {
+  cachedVoices = window.speechSynthesis.getVoices();
+  if (typeof window.speechSynthesis.addEventListener === "function") {
+    window.speechSynthesis.addEventListener("voiceschanged", () => {
+      cachedVoices = window.speechSynthesis.getVoices();
+    });
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => {
+      cachedVoices = window.speechSynthesis.getVoices();
+    };
+  }
+}
 
 export function isCurrentlySpeaking(): boolean {
   return (
@@ -106,7 +120,7 @@ export function speakText({
 
   // Resolve voice
   try {
-    const voices = window.speechSynthesis.getVoices();
+    const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
     if (voices.length > 0) {
       if (language === "hinglish") {
         const hiVoice = voices.find((v) => v.lang.toLowerCase().startsWith("hi"));

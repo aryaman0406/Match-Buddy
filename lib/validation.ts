@@ -80,6 +80,16 @@ export function validateExplainInput(body: ExplainRequestBody | null | undefined
     }
   }
 
+  // Question kind requires non-empty text
+  if (kind === "question") {
+    if (!text || typeof text !== "string" || !text.trim()) {
+      return {
+        isValid: false,
+        error: "Question text is required and cannot be empty or whitespace only.",
+      };
+    }
+  }
+
   // Validate persona
   const validPersonas = ["casual", "analyst", "desi"];
   let validatedPersona: "casual" | "analyst" | "desi" = "casual";

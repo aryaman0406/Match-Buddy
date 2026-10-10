@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { TopBar, PersonaMode } from "@/components/TopBar";
 import { MatchHeader } from "@/components/MatchHeader";
 import { OnField } from "@/components/OnField";
@@ -11,8 +11,10 @@ import { SportSelector } from "@/components/SportSelector";
 import { defaultMatchProvider } from "@/data/provider";
 import { SportMatchConfig, Player, MatchEvent } from "@/data/types";
 import { calculateCricketWinProbability } from "@/lib/winProbability";
-import { speakText, stopSpeech } from "@/lib/speech";
+import { speakText, stopSpeech, isSpeechSupported } from "@/lib/speech";
 import { X, Sparkles, AlertCircle, Volume2, VolumeX, Lightbulb } from "lucide-react";
+
+const emptySubscribe = () => () => {};
 
 export default function Home() {
   const allMatches = defaultMatchProvider.getAllMatches();
@@ -66,6 +68,11 @@ export default function Home() {
 
   // Speech state for desktop panel
   const [isSpeakingDesktop, setIsSpeakingDesktop] = useState(false);
+  const speechSupported = useSyncExternalStore(
+    emptySubscribe,
+    () => isSpeechSupported(),
+    () => false
+  );
 
   // In-flight request controller & timeout tracking
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -124,6 +131,8 @@ export default function Home() {
     stopSpeech();
     setIsSpeakingDesktop(false);
     setIsSheetOpen(false);
+    setSheetData(null);
+    setStreamedText("");
     setIsSimulating(false);
     setSimulationIndex(0);
     setCurrentMatch(selected);
@@ -133,6 +142,26 @@ export default function Home() {
     setEventsList(selected.events);
     setStrikerId(selected.players[0]?.id || "");
   };
+
+  // Auto-close BottomSheet when resizing to desktop (>=1024px) to prevent body scroll lock
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches && isSheetOpen) {
+        setIsSheetOpen(false);
+      }
+    };
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, [isSheetOpen]);
+
+  // Synchronize document lang attribute with active language state
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = language === "hinglish" ? "hi-Latn" : "en";
+    }
+  }, [language]);
 
   // Provide deterministic grounded fallback when AI service is unavailable or timed out
   const provideFallback = (
@@ -276,7 +305,7 @@ export default function Home() {
 
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done || controller.signal.aborted) break;
 
           if (!receivedFirstToken) {
             receivedFirstToken = true;
@@ -285,7 +314,9 @@ export default function Home() {
 
           const chunk = decoder.decode(value, { stream: true });
           accumulated += chunk;
-          setStreamedText(accumulated);
+          if (!controller.signal.aborted) {
+            setStreamedText(accumulated);
+          }
         }
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === "AbortError") {
@@ -626,33 +657,35 @@ export default function Home() {
                   {/* Actions Bar */}
                   <div className="pt-3 flex items-center justify-between border-t border-theme">
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleToggleSpeechDesktop}
-                        aria-label={isSpeakingDesktop ? "Stop audio commentary" : "Listen to audio commentary"}
-                        className={`flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 shadow-sm ${
-                          isSpeakingDesktop
-                            ? "bg-indigo-600 text-white border-indigo-600"
-                            : "bg-surface-raised hover:bg-surface border border-theme text-muted hover:text-foreground"
-                        }`}
-                      >
-                        {isSpeakingDesktop ? (
-                          <>
-                            <VolumeX className="w-4 h-4 text-white" />
-                            <span>Stop</span>
-                            <div className="flex items-center gap-0.5 ml-1">
-                              <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
-                              <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse delay-75" />
-                              <span className="w-0.5 h-2 bg-white rounded-full animate-pulse delay-150" />
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <Volume2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                            <span className="font-semibold">Listen</span>
-                          </>
-                        )}
-                      </button>
+                      {speechSupported && (
+                        <button
+                          type="button"
+                          onClick={handleToggleSpeechDesktop}
+                          aria-label={isSpeakingDesktop ? "Stop audio commentary" : "Listen to audio commentary"}
+                          className={`flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 shadow-sm ${
+                            isSpeakingDesktop
+                              ? "bg-indigo-600 text-white border-indigo-600"
+                              : "bg-surface-raised hover:bg-surface border border-theme text-muted hover:text-foreground"
+                          }`}
+                        >
+                          {isSpeakingDesktop ? (
+                            <>
+                              <VolumeX className="w-4 h-4 text-white" />
+                              <span>Stop</span>
+                              <div className="flex items-center gap-0.5 ml-1">
+                                <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
+                                <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse delay-75" />
+                                <span className="w-0.5 h-2 bg-white rounded-full animate-pulse delay-150" />
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                              <span className="font-semibold">Listen</span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
 
                     <span className="text-xs font-bold text-muted uppercase px-2.5 py-1 rounded-lg bg-surface-raised border border-theme">
