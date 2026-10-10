@@ -1,16 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ThemeToggle } from "./ThemeToggle";
-import { Key } from "lucide-react";
+import { Settings, X } from "lucide-react";
 
 export type PersonaMode = "casual" | "analyst" | "desi";
 
 interface TopBarProps {
   language: "en" | "hinglish";
   onLanguageChange: (lang: "en" | "hinglish") => void;
-  hasGeminiKey: boolean;
-  onOpenApiKeyModal: () => void;
   currentSportIcon?: string;
   persona: PersonaMode;
   onPersonaChange: (p: PersonaMode) => void;
@@ -19,108 +17,139 @@ interface TopBarProps {
 export function TopBar({
   language,
   onLanguageChange,
-  hasGeminiKey,
-  onOpenApiKeyModal,
   currentSportIcon = "🏏",
   persona,
   onPersonaChange,
 }: TopBarProps) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Close settings popover on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setIsSettingsOpen(false);
+      }
+    }
+    if (isSettingsOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSettingsOpen]);
+
   return (
-    <header className="w-full flex items-center justify-between py-2.5 px-3.5 border-b border-white/[0.07] bg-surface-glass/95 backdrop-blur-xl sticky top-0 z-30 transition-colors">
+    <header className="w-full flex items-center justify-between py-2.5 px-4 border-b border-theme bg-surface-glass backdrop-blur-xl sticky top-0 z-30 transition-colors">
       {/* Brand logo & icon */}
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-base select-none shrink-0 shadow-sm">
+        <div className="w-9 h-9 rounded-xl bg-surface-raised border border-theme flex items-center justify-center text-lg select-none shrink-0 shadow-sm">
           {currentSportIcon}
         </div>
         <div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-black text-sm tracking-tight text-foreground">
-              Match Buddy
-            </span>
-          </div>
-          <p className="text-[10px] text-text-muted hidden xs:block font-medium">
-            Live Sports Companion
+          <span className="font-black text-base tracking-tight text-foreground block leading-tight">
+            Match Buddy
+          </span>
+          <p className="text-xs text-muted hidden xs:block font-medium">
+            Live Companion
           </p>
         </div>
       </div>
 
-      {/* Action controls */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        {/* Persona Mode selector */}
-        <div className="relative">
-          <select
-            value={persona}
-            onChange={(e) => onPersonaChange(e.target.value as PersonaMode)}
-            title="Choose companion persona / tone"
-            aria-label="Companion tone"
-            className="h-8 pl-2.5 pr-6 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-foreground text-[11px] font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500/50 appearance-none shadow-sm transition-colors"
-          >
-            <option value="casual" className="bg-[#111520] text-white">🤝 Casual</option>
-            <option value="analyst" className="bg-[#111520] text-white">🧠 Analyst</option>
-            <option value="desi" className="bg-[#111520] text-white">🇮🇳 Desi</option>
-          </select>
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[8px] text-text-muted">
-            ▾
-          </span>
-        </div>
-
-        {/* Gemini API Key Button */}
-        <button
-          type="button"
-          onClick={onOpenApiKeyModal}
-          title="Configure Google Gemini API Key"
-          className={`flex items-center gap-1 px-2.5 py-1 min-h-[32px] rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-            hasGeminiKey
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
-              : "bg-white/[0.05] border-white/[0.08] text-text-muted hover:text-foreground hover:border-white/20"
-          }`}
-        >
-          <Key className="w-3 h-3 text-indigo-400" />
-          <span className="hidden sm:inline">
-            {hasGeminiKey ? "Gemini ⚡" : "API Key"}
-          </span>
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              hasGeminiKey ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
-            }`}
-          />
-        </button>
-
+      {/* Action controls: Language toggle and Settings gear */}
+      <div className="flex items-center gap-2">
         {/* Language selector pill */}
         <div
           role="group"
           aria-label="Language selection"
-          className="bg-white/[0.05] border border-white/[0.08] p-0.5 rounded-xl flex items-center shadow-inner"
+          suppressHydrationWarning
+          className="bg-surface-raised border border-theme p-0.5 rounded-xl flex items-center shadow-inner"
         >
           <button
             type="button"
+            suppressHydrationWarning
             onClick={() => onLanguageChange("en")}
             aria-pressed={language === "en"}
-            className={`px-2.5 py-1 min-h-[28px] rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
+            className={`px-3 py-1.5 min-h-[34px] rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
               language === "en"
-                ? "bg-indigo-500 text-white shadow-sm"
-                : "text-text-muted hover:text-foreground"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-muted hover:text-foreground"
             }`}
           >
             EN
           </button>
           <button
             type="button"
+            suppressHydrationWarning
             onClick={() => onLanguageChange("hinglish")}
             aria-pressed={language === "hinglish"}
-            className={`px-2.5 py-1 min-h-[28px] rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
+            className={`px-3 py-1.5 min-h-[34px] rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
               language === "hinglish"
-                ? "bg-indigo-500 text-white shadow-sm"
-                : "text-text-muted hover:text-foreground"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-muted hover:text-foreground"
             }`}
           >
             हिंग
           </button>
         </div>
 
-        {/* Theme Toggle (Dark / Light) */}
-        <ThemeToggle />
+        {/* Settings gear button & popover */}
+        <div className="relative" ref={popoverRef}>
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            aria-label="Settings and companion preferences"
+            aria-expanded={isSettingsOpen}
+            className="w-10 h-10 min-w-[44px] min-h-[44px] rounded-xl bg-surface-raised hover:bg-surface border border-theme flex items-center justify-center text-muted hover:text-foreground transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-indigo-500 shadow-sm"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+
+          {isSettingsOpen && (
+            <div className="absolute right-0 top-12 w-64 bg-surface border border-theme rounded-2xl shadow-2xl p-4 space-y-4 z-40 animate-scale-up">
+              <div className="flex items-center justify-between border-b border-theme pb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                  Companion Settings
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsOpen(false)}
+                  aria-label="Close settings"
+                  className="p-1 text-muted hover:text-foreground"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Persona tone selector */}
+              <div className="space-y-1.5">
+                <label htmlFor="settings-persona-select" className="text-xs font-semibold text-foreground block">
+                  Companion Tone
+                </label>
+                <select
+                  id="settings-persona-select"
+                  value={persona}
+                  onChange={(e) => onPersonaChange(e.target.value as PersonaMode)}
+                  className="w-full h-9 px-2.5 rounded-xl bg-surface-raised border border-theme text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                >
+                  <option value="casual" className="bg-surface text-foreground">🤝 Casual Fan</option>
+                  <option value="analyst" className="bg-surface text-foreground">🧠 Tactical Analyst</option>
+                  <option value="desi" className="bg-surface text-foreground">🇮🇳 Desi Couch Buddy</option>
+                </select>
+              </div>
+
+              {/* Theme toggle */}
+              <div className="flex items-center justify-between pt-1 border-t border-theme">
+                <span className="text-xs font-semibold text-foreground">
+                  Appearance
+                </span>
+                <ThemeToggle />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
+
   );
 }

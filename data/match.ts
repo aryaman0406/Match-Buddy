@@ -168,7 +168,7 @@ export const initialEvents: MatchEvent[] = [
     title: "No-ball & FREE HIT",
     term: "Free Hit",
     badgeText: "FREE HIT",
-    badgeColor: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+    badgeColor: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
     fallbackExplain: {
       en: "The bowler overstepped the crease resulting in a no-ball penalty run and an immediate Free Hit. On the subsequent delivery, the batter cannot be dismissed by bowled, caught, or LBW, offering a golden risk-free chance to hit a boundary.",
       hinglish: "Bowler ka paav crease ke aage chala gaya, isliye umpire ne no-ball dekar Free Hit diya. Agli ball par batter catch ya bowled out nahi ho sakta, toh khul kar chhakka maar sakta hai.",
@@ -181,7 +181,7 @@ export const initialEvents: MatchEvent[] = [
     title: "DRS Review: LBW Not Out",
     term: "DRS Review",
     badgeText: "DRS",
-    badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    badgeColor: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30",
     fallbackExplain: {
       en: "Australia used the Decision Review System to challenge the umpire's Not Out decision for LBW against Hardik Pandya. Ball tracking confirmed the impact occurred outside off-stump, keeping the batter safe and costing Australia one review.",
       hinglish: "Australia ne Hardik ke khilaf umpire ke Not Out faisle par DRS review manga tha. Replay me ball stumps ke bahar impact karti dikhi, isliye Hardik bach gaye aur Australia ka review waste hua.",
@@ -194,7 +194,7 @@ export const initialEvents: MatchEvent[] = [
     title: "Wicket! Tilak c & b Cummins",
     term: "Caught & Bowled",
     badgeText: "WICKET",
-    badgeColor: "bg-rose-500/15 text-rose-400 border-rose-500/30",
+    badgeColor: "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30",
     fallbackExplain: {
       en: "Tilak Varma mistimed a slower off-cutter straight back into Pat Cummins' hands, snapping a vital 45-run stand. This dismissal brought Hardik Pandya to the crease with India needing 68 from 52 balls.",
       hinglish: "Tilak Varma Pat Cummins ki slow ball ko padh nahi paaye aur seedha bowler ke haath me catch de baithe. Is wicket ke girne ke baad Hardik Pandya batting karne aaye the.",
@@ -207,7 +207,7 @@ export const initialEvents: MatchEvent[] = [
     title: "Impact Player: Rinku Singh In",
     term: "Impact Player Rule",
     badgeText: "IMPACT SUB",
-    badgeColor: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+    badgeColor: "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30",
     fallbackExplain: {
       en: "India tactically substituted specialist spinner Kuldeep Yadav with explosive death-overs finisher Rinku Singh. This tactical move deepens the batting lineup for the tense final sprint of this run chase.",
       hinglish: "India ne chase ko finish karne ke liye bowler ki jagah explosive batter Rinku Singh ko Impact Player ke taur par utara. Is tactical badlaav se India ki batting last over tak strong ho gayi hai.",
@@ -220,7 +220,7 @@ export const initialEvents: MatchEvent[] = [
     title: "Powerplay Ends (48/1)",
     term: "Powerplay Restrictions",
     badgeText: "POWERPLAY",
-    badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+    badgeColor: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
     fallbackExplain: {
       en: "The first 6 overs with mandatory fielding restrictions have concluded, permitting Australia to spread up to 5 fielders outside the 30-yard ring. India built a steady 48/1 base but now rely on strike rotation through middle overs.",
       hinglish: "Pehle 6 overs ka Powerplay khatam ho gaya hai, ab Australia boundary par 5 fielders rakh sakti hai. India ne 48/1 ka achha score banaya tha, par ab singles-doubles zyada lene honge.",
@@ -288,7 +288,7 @@ export const simulationSteps: SimulationStep[] = [
       title: "FOUR! Cracking Drive by Hardik",
       term: "Boundary (4 Runs)",
       badgeText: "BOUNDARY",
-      badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+      badgeColor: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
       fallbackExplain: {
         en: "Hardik opened the bat face and pierced the infield gap for a boundary. This brings India within 50 runs of victory and reduces the required run rate to 9.09.",
         hinglish: "Hardik ne ball ki length parakhte hue khubsurat cover drive mara aur 4 runs bator liye. Ab target 50 runs ka reh gaya hai aur pressure kam hua hai.",
@@ -323,7 +323,7 @@ export const simulationSteps: SimulationStep[] = [
       title: "SIX! Trademark SKY Scoop",
       term: "Maximum (6 Runs)",
       badgeText: "SIX",
-      badgeColor: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+      badgeColor: "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30",
       fallbackExplain: {
         en: "Suryakumar Yadav used Starc's 144 km/h pace to ramp the ball high over the fine leg boundary. A stunning stroke that brings the required run rate right down to 8.32.",
         hinglish: "Surya ne Starc ki tezi ka fayda uthaya aur ghutne par baith kar fine-leg par 6 runs maar diye! Is shot ne Australian bowlers ke hosh uda diye hain.",
@@ -358,7 +358,8 @@ export const simulationSteps: SimulationStep[] = [
       title: "50 FOR HARDIK PANDYA! (31b)",
       term: "Half-Century Milestone",
       badgeText: "MILESTONE",
-      badgeColor: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+      badgeColor: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+
       fallbackExplain: {
         en: "Hardik Pandya brings up a blistering half-century off just 31 deliveries under intense chase pressure. India are now firmly in the driver's seat with only 38 required off 29 balls.",
         hinglish: "Hardik Pandya ne sirf 31 balls me apni zabardast fifty poori ki! Match ab poori tarah India ke hath me hai kyunki 29 balls me bas 38 runs bache hain.",

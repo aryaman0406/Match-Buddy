@@ -1,68 +1,85 @@
 "use client";
 
-import React from "react";
-import { Plus } from "lucide-react";
-import { SportMatchConfig, allSportsMatches } from "@/data/sportsData";
+import React, { useRef, useEffect } from "react";
+import { ChevronRight } from "lucide-react";
+import { SportMatchConfig } from "@/data/types";
 
 interface SportSelectorProps {
   currentMatchId: string;
   onSelectMatch: (matchConfig: SportMatchConfig) => void;
-  onOpenCustomMatch: () => void;
-  customMatches?: SportMatchConfig[];
+  matches: SportMatchConfig[];
 }
 
 export function SportSelector({
   currentMatchId,
   onSelectMatch,
-  onOpenCustomMatch,
-  customMatches = [],
+  matches,
 }: SportSelectorProps) {
-  const combinedList = [...allSportsMatches, ...customMatches];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const activeBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  // Auto-scroll active tab into view smoothly
+  useEffect(() => {
+    if (activeBtnRef.current && containerRef.current) {
+      activeBtnRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [currentMatchId]);
 
   return (
-    <div
-      role="tablist"
-      aria-label="Select Sport & Match"
-      className="w-full flex items-center gap-1.5 overflow-x-auto py-1 px-0.5 no-scrollbar select-none"
-    >
-      {combinedList.map((m) => {
-        const isSelected = m.id === currentMatchId;
-        return (
-          <button
-            key={m.id}
-            type="button"
-            role="tab"
-            aria-selected={isSelected}
-            onClick={() => onSelectMatch(m)}
-            className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-2xl text-xs font-bold border transition-all duration-150 cursor-pointer ${
-              isSelected
-                ? "bg-white/[0.12] text-white border-white/[0.25] shadow-[0_2px_12px_rgba(0,0,0,0.3)] scale-[1.01]"
-                : "bg-white/[0.04] border-white/[0.06] text-text-muted hover:text-foreground hover:bg-white/[0.08]"
-            }`}
-          >
-            <span className="text-sm shrink-0">{m.sportIcon}</span>
-            <span>{m.sportName}</span>
-            <span
-              className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold uppercase tracking-wider ${
-                isSelected ? "bg-white/20 text-white" : "bg-black/20 text-text-muted"
+    <div className="relative w-full">
+      {/* Scrollable tablist */}
+      <div
+        ref={containerRef}
+        role="tablist"
+        aria-label="Select Sport & Match"
+        className="w-full flex items-center gap-2 overflow-x-auto py-1 px-1 no-scrollbar select-none scroll-smooth"
+      >
+        {matches.map((m) => {
+          const isSelected = m.id === currentMatchId;
+          return (
+            <button
+              key={m.id}
+              ref={isSelected ? activeBtnRef : null}
+              type="button"
+              role="tab"
+              aria-selected={isSelected}
+              id={`tab-${m.sportId}`}
+              aria-controls={`panel-${m.sportId}`}
+              onClick={() => onSelectMatch(m)}
+              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-2xl text-xs font-bold border transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                isSelected
+                  ? "bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 scale-[1.01]"
+                  : "bg-surface border-theme text-muted hover:text-foreground hover:bg-surface-raised hover:border-border-focus"
               }`}
             >
-              {m.matchTitle}
-            </span>
-          </button>
-        );
-      })}
+              <span className="text-base shrink-0" aria-hidden="true">
+                {m.sportIcon}
+              </span>
+              <span className="font-bold">{m.sportName}</span>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                  isSelected ? "bg-white/20 text-white" : "bg-surface-raised border border-theme text-muted"
+                }`}
+              >
+                {m.matchTitle}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Any Sport / Custom Button */}
-      <button
-        type="button"
-        onClick={onOpenCustomMatch}
-        title="Follow any sport or custom team"
-        className="shrink-0 flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-2xl text-xs font-bold bg-white/[0.04] border border-dashed border-indigo-400/50 text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-400 transition-colors cursor-pointer"
+      {/* Right scroll hint edge fade with subtle arrow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background via-background/60 to-transparent flex items-center justify-end pr-0.5 sm:hidden"
       >
-        <Plus className="w-3.5 h-3.5 text-indigo-400" />
-        <span>Custom Match</span>
-      </button>
+        <ChevronRight className="w-3.5 h-3.5 text-muted/60 animate-pulse" />
+      </div>
+
     </div>
   );
 }

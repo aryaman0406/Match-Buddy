@@ -8,44 +8,54 @@ import { MomentsFeed } from "@/components/MomentsFeed";
 import { AskBar } from "@/components/AskBar";
 import { BottomSheet, BottomSheetData } from "@/components/BottomSheet";
 import { SportSelector } from "@/components/SportSelector";
-import { ApiKeyModal } from "@/components/ApiKeyModal";
-import { CustomMatchModal } from "@/components/CustomMatchModal";
-import { allSportsMatches, SportMatchConfig } from "@/data/sportsData";
-import {
-  match as initialMatchData,
-  Player,
-  MatchEvent,
-  MatchSituation,
-} from "@/data/match";
+import { defaultMatchProvider } from "@/data/provider";
+import { SportMatchConfig, Player, MatchEvent } from "@/data/types";
+import { calculateCricketWinProbability } from "@/lib/winProbability";
+import { speakText, stopSpeech } from "@/lib/speech";
+import { X, Sparkles, AlertCircle, Volume2, VolumeX, Lightbulb } from "lucide-react";
 
 export default function Home() {
-  // Language & Persona state
-  const [language, setLanguage] = useState<"en" | "hinglish">("en");
-  const [persona, setPersona] = useState<PersonaMode>("casual");
+  const allMatches = defaultMatchProvider.getAllMatches();
 
-  // Gemini API Key state
-  const [geminiKey, setGeminiKey] = useState<string>("");
-  const [geminiModel, setGeminiModel] = useState<string>("gemini-2.0-flash");
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState<boolean>(false);
+  // Language & Persona state with lazy initialization from localStorage
+  const [language, setLanguage] = useState<"en" | "hinglish">(() => {
+    if (typeof window !== "undefined") {
+      const savedLang = localStorage.getItem("match-buddy-lang") as "en" | "hinglish" | null;
+      if (savedLang) return savedLang;
+    }
+    return "en";
+  });
 
-  // Active Sport & Match state
-  const [currentMatch, setCurrentMatch] = useState<SportMatchConfig>(allSportsMatches[0]);
-  const [customMatches, setCustomMatches] = useState<SportMatchConfig[]>([]);
-  const [isCustomMatchModalOpen, setIsCustomMatchModalOpen] = useState<boolean>(false);
+  const [persona, setPersona] = useState<PersonaMode>(() => {
+    if (typeof window !== "undefined") {
+      const savedPersona = localStorage.getItem("match-buddy-persona") as PersonaMode | null;
+      if (savedPersona) return savedPersona;
+    }
+    return "casual";
+  });
+
+  // First-visit Tip Banner state (persisted choice)
+  const [showTipBanner, setShowTipBanner] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return !localStorage.getItem("match-buddy-banner-dismissed");
+    }
+    return true;
+  });
+
+  // Active Sport & Match state (from MatchDataProvider)
+  const [currentMatch, setCurrentMatch] = useState<SportMatchConfig>(allMatches[0]);
 
   // Live match score, probabilities & players
-  const [matchData, setMatchData] = useState<MatchSituation>(initialMatchData);
-  const [scoreDisplay, setScoreDisplay] = useState(allSportsMatches[0].scoreDisplay);
-  const [winProbability, setWinProbability] = useState(allSportsMatches[0].winProbability);
-  const [playersList, setPlayersList] = useState<Player[]>(allSportsMatches[0].players);
-  const [eventsList, setEventsList] = useState<MatchEvent[]>(allSportsMatches[0].events);
+  const [scoreDisplay, setScoreDisplay] = useState(allMatches[0].scoreDisplay);
+  const [winProbability, setWinProbability] = useState(allMatches[0].winProbability);
+  const [playersList, setPlayersList] = useState<Player[]>(allMatches[0].players);
+  const [eventsList, setEventsList] = useState<MatchEvent[]>(allMatches[0].events);
   const [strikerId, setStrikerId] = useState<string>("hardik-pandya");
   const [recentEventId, setRecentEventId] = useState<string | undefined>(undefined);
 
   // Simulation controls
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [, setSimulationIndex] = useState<number>(0);
-
 
   // BottomSheet & AI streaming state
   const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
@@ -54,32 +64,23 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isFallback, setIsFallback] = useState<boolean>(false);
 
+  // Speech state for desktop panel
+  const [isSpeakingDesktop, setIsSpeakingDesktop] = useState(false);
+
   // In-flight request controller
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Load saved preferences on mount
+  // Stop any active speech synthesis on unmount
   useEffect(() => {
-    const savedLang = localStorage.getItem("match-buddy-lang") as "en" | "hinglish" | null;
-    if (savedLang) setLanguage(savedLang);
-
-    const savedPersona = localStorage.getItem("match-buddy-persona") as PersonaMode | null;
-    if (savedPersona) setPersona(savedPersona);
-
-    const savedKey = localStorage.getItem("match-buddy-gemini-key") || "";
-    if (savedKey) setGeminiKey(savedKey);
-
-    const savedModel = localStorage.getItem("match-buddy-gemini-model") || "gemini-2.0-flash";
-    setGeminiModel(savedModel);
-
-    try {
-      const savedCustom = localStorage.getItem("match-buddy-custom-matches");
-      if (savedCustom) {
-        setCustomMatches(JSON.parse(savedCustom));
-      }
-    } catch {
-      // Ignore parse error
-    }
+    return () => {
+      stopSpeech();
+    };
   }, []);
+
+  const handleDismissBanner = () => {
+    setShowTipBanner(false);
+    localStorage.setItem("match-buddy-banner-dismissed", "true");
+  };
 
   const handlePersonaChange = (p: PersonaMode) => {
     setPersona(p);
@@ -89,19 +90,11 @@ export default function Home() {
     }
   };
 
-  const handleSaveGeminiKey = (key: string, model: string) => {
-    setGeminiKey(key);
-    setGeminiModel(model);
-    localStorage.setItem("match-buddy-gemini-key", key);
-    localStorage.setItem("match-buddy-gemini-model", model);
-  };
-
-  const handleClearGeminiKey = () => {
-    setGeminiKey("");
-    localStorage.removeItem("match-buddy-gemini-key");
-  };
-
   const handleLanguageChange = (newLang: "en" | "hinglish") => {
+    // Cancel any current in-flight streaming
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
     setLanguage(newLang);
     localStorage.setItem("match-buddy-lang", newLang);
 
@@ -110,8 +103,15 @@ export default function Home() {
     }
   };
 
-  // Switch sport / match handler
+  // Switch sport / match handler (consumes MatchDataProvider)
   const handleSelectMatch = (selected: SportMatchConfig) => {
+    // Cancel in-flight requests and speech on sport switch
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    stopSpeech();
+    setIsSpeakingDesktop(false);
+    setIsSheetOpen(false);
     setIsSimulating(false);
     setSimulationIndex(0);
     setCurrentMatch(selected);
@@ -120,25 +120,9 @@ export default function Home() {
     setPlayersList(selected.players);
     setEventsList(selected.events);
     setStrikerId(selected.players[0]?.id || "");
-
-    if (selected.sportId === "cricket") {
-      setMatchData(initialMatchData);
-    }
   };
 
-  // Create custom match handler
-  const handleCreateCustomMatch = (newMatch: SportMatchConfig) => {
-    const updated = [newMatch, ...customMatches];
-    setCustomMatches(updated);
-    try {
-      localStorage.setItem("match-buddy-custom-matches", JSON.stringify(updated));
-    } catch {
-      // ignore storage error
-    }
-    handleSelectMatch(newMatch);
-  };
-
-  // Fallback text provider using grounded data in active match config
+  // Provide deterministic grounded fallback when AI service is unavailable or timed out
   const provideFallback = (
     data: BottomSheetData,
     targetLang: "en" | "hinglish",
@@ -177,17 +161,18 @@ export default function Home() {
         }
       }
       if (!fallback) {
+        // Friendly retry message for arbitrary free-text questions with no saved rule
         fallback =
           targetLang === "hinglish"
-            ? `Yeh ${activeMatch.sportName} ka ek important concept hai. Match Buddy AI se aap kisi bhi rule ya player ke baare me pooch sakte hain!`
-            : `This is a key tactical concept in ${activeMatch.sportName}. Feel free to ask Match Buddy about any player, team, or rule!`;
+            ? "Abhi hum AI companion se connect nahi kar paaye. Kripya thodi der baad dobara koshish karein ya neeche diye gaye suggest kiye hue rules par tap karein!"
+            : "We couldn't reach the AI companion right now. Please try again in a moment or tap one of the suggested rules below!";
       }
     }
 
     setStreamedText(fallback);
   };
 
-  // Trigger AI explanation
+  // Trigger AI explanation with strict 10s timeout, abort controller, and fallback safety
   const triggerExplanation = useCallback(
     async (
       data: BottomSheetData,
@@ -195,6 +180,11 @@ export default function Home() {
       activeMatch: SportMatchConfig = currentMatch,
       activePersona: PersonaMode = persona
     ) => {
+      // 1. Stop any ongoing speech
+      stopSpeech();
+      setIsSpeakingDesktop(false);
+
+      // Cancel previous in-flight request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -207,13 +197,16 @@ export default function Home() {
       setIsFallback(false);
 
       let receivedFirstToken = false;
+
+      // 2. Strict 10-second timeout safeguard
       const timeoutId = setTimeout(() => {
         if (!receivedFirstToken && !controller.signal.aborted) {
-          console.warn("AI response exceeded 8s threshold; engaging grounded fallback.");
+          controller.abort();
           setIsFallback(true);
           provideFallback(data, targetLang, activeMatch);
+          setIsLoading(false);
         }
-      }, 8000);
+      }, 10000);
 
       try {
         const matchSummary = `${activeMatch.teamFullNames.join(" vs ")} (${activeMatch.seriesOrLeague}). Score: ${scoreDisplay.primary} (${scoreDisplay.progress}). ${scoreDisplay.secondaryStatus}`;
@@ -225,7 +218,6 @@ export default function Home() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(geminiKey ? { "x-gemini-key": geminiKey, "x-gemini-model": geminiModel } : {}),
           },
           body: JSON.stringify({
             kind: data.kind,
@@ -234,9 +226,7 @@ export default function Home() {
             language: targetLang,
             persona: activePersona,
             sport: activeMatch.sportName,
-            matchState: matchSummary,
-            geminiApiKey: geminiKey,
-            geminiModel: geminiModel,
+            matchContext: matchSummary,
             playerData: selectedPlayer
               ? {
                   name: selectedPlayer.name,
@@ -261,11 +251,11 @@ export default function Home() {
         });
 
         if (!response.ok) {
-          throw new Error(`Server returned error ${response.status}`);
+          throw new Error(`Server returned HTTP ${response.status}`);
         }
 
         if (!response.body) {
-          throw new Error("No response body");
+          throw new Error("No response stream");
         }
 
         const reader = response.body.getReader();
@@ -289,7 +279,7 @@ export default function Home() {
         if (err instanceof DOMException && err.name === "AbortError") {
           return;
         }
-        console.warn("AI request error, showing fallback:", err);
+        // Graceful fallback on error, 429, 503, or timeout
         setIsFallback(true);
         provideFallback(data, targetLang, activeMatch);
       } finally {
@@ -297,14 +287,14 @@ export default function Home() {
         setIsLoading(false);
       }
     },
-    [currentMatch, geminiKey, geminiModel, persona, scoreDisplay]
+    [currentMatch, persona, scoreDisplay]
   );
 
-  // Open Sheet handlers
+  // Sheet openers
   const handleSelectPlayer = (player: Player) => {
     const whyItMatters =
       language === "hinglish"
-        ? `${player.name} (${player.onField}) match ke critical juncture par action me hain. Unki strategy match badal sakti hai.`
+        ? `${player.name} (${player.onField}) match ke critical juncture par action me hain.`
         : `${player.name} (${player.onField}) holds the tactical key at this pivotal match moment.`;
 
     const data: BottomSheetData = {
@@ -323,7 +313,7 @@ export default function Home() {
   const handleExplainEvent = (event: MatchEvent) => {
     const whyItMatters =
       language === "hinglish"
-        ? `${event.title} (${event.term}) ne match momentum ko seedha shift kiya hai.`
+        ? `${event.title} (${event.term}) ne match momentum ko shift kiya hai.`
         : `${event.title} (${event.term}) shifted the tactical momentum of the contest.`;
 
     const data: BottomSheetData = {
@@ -376,10 +366,12 @@ export default function Home() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
+    stopSpeech();
+    setIsSpeakingDesktop(false);
     setIsSheetOpen(false);
   };
 
-  // Universal Live match auto-simulation (ticks every 6s for ANY active sport!)
+  // Live match auto-simulation (deterministic probability updates)
   useEffect(() => {
     if (!isSimulating) return;
 
@@ -391,7 +383,6 @@ export default function Home() {
         const nextIndex = (prevIndex + 1) % steps.length;
         const step = steps[nextIndex];
 
-        // Update score display
         setScoreDisplay({
           primary: step.scorePrimary,
           primaryLabel: currentMatch.teams[0],
@@ -400,17 +391,18 @@ export default function Home() {
           secondaryStatus: step.secondaryStatus,
         });
 
-        // Update live win probabilities
-        if (step.winProbability) {
+        // Compute deterministic win probability if cricket state is provided
+        if (step.cricketState) {
+          const computed = calculateCricketWinProbability(step.cricketState);
+          setWinProbability(computed);
+        } else if (step.winProbability) {
           setWinProbability(step.winProbability);
         }
 
-        // Update active performer
         if (step.activePerformerId) {
           setStrikerId(step.activePerformerId);
         }
 
-        // Update player stats
         if (step.playerStatsUpdates) {
           setPlayersList((prev) =>
             prev.map((player) => {
@@ -422,7 +414,6 @@ export default function Home() {
           );
         }
 
-        // Push new simulation event to timeline with pulse highlight
         if (step.newEvent) {
           const newEvt = step.newEvent;
           setRecentEventId(newEvt.id);
@@ -440,70 +431,231 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isSimulating, currentMatch]);
 
+  const handleToggleSpeechDesktop = () => {
+    if (isSpeakingDesktop) {
+      stopSpeech();
+      setIsSpeakingDesktop(false);
+    } else {
+      const textToRead = streamedText || sheetData?.title || "";
+      if (!textToRead) return;
+
+      speakText({
+        text: textToRead,
+        language,
+        onStart: () => setIsSpeakingDesktop(true),
+        onEnd: () => setIsSpeakingDesktop(false),
+        onError: () => setIsSpeakingDesktop(false),
+      });
+    }
+  };
+
+
   return (
     <div className="w-full flex justify-center bg-background min-h-screen text-foreground">
-      {/* Mobile-first centered container (max-width 480px on desktop) */}
-      <main className="w-full max-w-[480px] min-h-screen flex flex-col bg-background relative border-x border-theme/40 pb-36">
-        {/* TopBar with branding, persona switcher, Gemini Key, and language toggle */}
+      {/* Container: Centered max-480px on mobile, responsive two-column grid on desktop (>=1024px) */}
+      <div className="w-full max-w-6xl min-h-screen flex flex-col bg-background relative border-x border-theme/40 pb-36">
+        {/* TopBar with clean branding, language pill, and settings gear popover */}
         <TopBar
           language={language}
           onLanguageChange={handleLanguageChange}
-          hasGeminiKey={Boolean(geminiKey)}
-          onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
           currentSportIcon={currentMatch.sportIcon}
           persona={persona}
           onPersonaChange={handlePersonaChange}
         />
 
-        {/* Multi-Sport Selector Bar */}
-        <div className="px-3 pt-2">
+        {/* First visit tip banner (neutral prompt, dismissable and persisted) */}
+        {showTipBanner && (
+          <div
+            role="banner"
+            aria-label="First visit tip banner"
+            className="mx-3 mt-2.5 p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between gap-3 text-xs text-foreground"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <span className="font-medium text-foreground/90">
+                Try it: tap any player or event for an instant explanation.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleDismissBanner}
+              aria-label="Dismiss tip banner"
+              className="p-1 rounded-lg hover:bg-indigo-500/15 text-muted hover:text-foreground transition-colors cursor-pointer shrink-0 min-w-[32px] min-h-[32px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Multi-Sport Selector Bar across Cricket, Football, Basketball */}
+        <div className="px-3 pt-2.5">
           <SportSelector
             currentMatchId={currentMatch.id}
             onSelectMatch={handleSelectMatch}
-            onOpenCustomMatch={() => setIsCustomMatchModalOpen(true)}
-            customMatches={customMatches}
+            matches={allMatches}
           />
         </div>
 
-        {/* Main Content Area */}
-        <div className="p-3.5 sm:p-4 space-y-4">
-          {/* Live Match Card with Win Probability Meter */}
-          <MatchHeader
-            matchData={matchData}
-            scoreDisplay={scoreDisplay}
-            sportName={currentMatch.sportName}
-            seriesOrLeague={currentMatch.seriesOrLeague}
-            teams={currentMatch.teams}
-            winProbability={winProbability}
-            onOpenStorySoFar={handleOpenStorySoFar}
-            isSimulating={isSimulating}
-            onToggleSimulation={() => setIsSimulating((prev) => !prev)}
-          />
+        {/* Main Content Layout: Single column mobile, 2-column on desktop (lg:) */}
+        <div className="p-3.5 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Match & Players & Feed (lg:col-span-7) */}
+          <div className="lg:col-span-7 space-y-4">
+            {/* Live Match Card with Win Probability Meter */}
+            <MatchHeader
+              scoreDisplay={scoreDisplay}
+              sportName={currentMatch.sportName}
+              seriesOrLeague={currentMatch.seriesOrLeague}
+              teams={currentMatch.teams}
+              winProbability={winProbability}
+              onOpenStorySoFar={handleOpenStorySoFar}
+              isSimulating={isSimulating}
+              onToggleSimulation={() => setIsSimulating((prev) => !prev)}
+            />
 
-          {/* On-Field Players for the active sport */}
-          <OnField
-            players={playersList}
-            strikerId={strikerId}
-            onSelectPlayer={handleSelectPlayer}
-            sportName={currentMatch.sportName}
-          />
+            {/* On-Field Players for the active sport */}
+            <OnField
+              players={playersList}
+              strikerId={strikerId}
+              onSelectPlayer={handleSelectPlayer}
+              sportName={currentMatch.sportName}
+            />
 
-          {/* Match Moments Timeline */}
-          <MomentsFeed
-            events={eventsList}
-            onExplainEvent={handleExplainEvent}
-            recentEventId={recentEventId}
-          />
+            {/* Match Moments Timeline */}
+            <MomentsFeed
+              events={eventsList}
+              onExplainEvent={handleExplainEvent}
+              recentEventId={recentEventId}
+            />
 
-          <footer className="pt-8 pb-3 text-center border-t border-white/[0.06] space-y-1">
-            <p className="text-xs font-bold text-foreground/80 tracking-tight">
-              Match Buddy · Live Sports Companion
-            </p>
-            <p className="text-[10px] text-text-muted">
-              Live broadcast stats, tactical intelligence &amp; match recaps
-            </p>
-          </footer>
+            {/* Honest Footer: No absolute claims */}
+            <footer className="pt-8 pb-3 text-center border-t border-theme space-y-1.5">
+              <p className="text-xs font-bold text-foreground/80 tracking-tight">
+                Match Buddy · Live Sports AI Companion
+              </p>
+              <p className="text-xs text-muted max-w-md mx-auto leading-relaxed">
+                Player facts come from a curated dataset; AI explains them in context. AI can make mistakes. Powered by Google Gemini.
+              </p>
+            </footer>
+          </div>
+
+          {/* Right Column: AI Answer Panel on Desktop (lg:col-span-5) */}
+          <div className="hidden lg:block lg:col-span-5 sticky top-20">
+            <div className="w-full glass-panel rounded-3xl p-5 shadow-xl space-y-4 border border-theme min-h-[460px] flex flex-col justify-between">
+              {sheetData ? (
+                <div className="space-y-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-surface-raised border border-theme text-muted uppercase tracking-wider">
+                        Match Intel
+                      </span>
+                      {isFallback && (
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          <span>Showing a saved explanation</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="text-xl font-black text-foreground leading-snug tracking-tight">
+                      {sheetData.title}
+                    </h3>
+                    {sheetData.subtitle && (
+                      <p className="text-xs text-muted mt-0.5 font-medium">
+                        {sheetData.subtitle}
+                      </p>
+                    )}
+
+                    {/* AI Answer Area */}
+                    <div
+                      aria-live="polite"
+                      lang={language === "hinglish" ? "hi-Latn" : "en"}
+                      className="mt-4 text-foreground text-sm leading-relaxed"
+                    >
+                      {isLoading && !streamedText ? (
+                        <div className="space-y-2.5 py-2">
+                          <div className="h-4 w-full rounded-md animate-shimmer" />
+                          <div className="h-4 w-5/6 rounded-md animate-shimmer" />
+                          <div className="h-4 w-3/4 rounded-md animate-shimmer" />
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-line font-medium selection:bg-indigo-500/30 text-foreground/95">
+                          {streamedText}
+                          {isLoading && (
+                            <span className="inline-block w-1.5 h-4 ml-1 bg-indigo-500 dark:bg-indigo-400 animate-pulse align-middle" />
+                          )}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Tactical Context Box */}
+                    {sheetData.whyItMatters && (
+                      <div className="context-highlight-box p-3.5 rounded-2xl space-y-1 mt-4">
+                        <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                          <Lightbulb className="w-3.5 h-3.5" />
+                          <span>Tactical Context</span>
+                        </span>
+                        <p className="text-xs text-foreground/90 font-medium leading-relaxed pl-5">
+                          {sheetData.whyItMatters}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions Bar */}
+                  <div className="pt-3 flex items-center justify-between border-t border-theme">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleToggleSpeechDesktop}
+                        aria-label={isSpeakingDesktop ? "Stop audio commentary" : "Listen to audio commentary"}
+                        className={`flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 shadow-sm ${
+                          isSpeakingDesktop
+                            ? "bg-indigo-600 text-white border-indigo-600"
+                            : "bg-surface-raised hover:bg-surface border border-theme text-muted hover:text-foreground"
+                        }`}
+                      >
+                        {isSpeakingDesktop ? (
+                          <>
+                            <VolumeX className="w-4 h-4 text-white" />
+                            <span>Stop</span>
+                            <div className="flex items-center gap-0.5 ml-1">
+                              <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
+                              <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse delay-75" />
+                              <span className="w-0.5 h-2 bg-white rounded-full animate-pulse delay-150" />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                            <span className="font-semibold">Listen</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <span className="text-xs font-bold text-muted uppercase px-2.5 py-1 rounded-lg bg-surface-raised border border-theme">
+                      {language === "hinglish" ? "Hinglish" : "English"}
+                    </span>
+                  </div>
+
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xl">
+                    ✨
+                  </div>
+                  <h4 className="text-base font-bold text-foreground">
+                    Tap any player, event, or rule
+                  </h4>
+                  <p className="text-xs text-muted max-w-xs leading-relaxed">
+                    Select any batsman or bowler on the pitch, breakdown a match moment, or ask a question below to see instant 2-line AI explanations.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
+
 
         {/* Sticky AskBar at Bottom */}
         <AskBar
@@ -513,8 +665,9 @@ export default function Home() {
           placeholder={`Ask about ${currentMatch.sportName}, ${currentMatch.teamFullNames[0]} vs ${currentMatch.teamFullNames[1]}...`}
         />
 
-        {/* BottomSheet Modal for AI Answers */}
+        {/* Mobile BottomSheet Modal for AI Answers (<1024px) */}
         <BottomSheet
+          key={sheetData ? `${sheetData.title}-${sheetData.kind}-${sheetData.id || ""}` : "closed"}
           isOpen={isSheetOpen}
           onClose={handleCloseSheet}
           data={sheetData}
@@ -523,24 +676,7 @@ export default function Home() {
           isFallback={isFallback}
           language={language}
         />
-
-        {/* Gemini API Key Modal with Live Test Connection Probe */}
-        <ApiKeyModal
-          isOpen={isApiKeyModalOpen}
-          onClose={() => setIsApiKeyModalOpen(false)}
-          geminiKey={geminiKey}
-          geminiModel={geminiModel}
-          onSaveKey={handleSaveGeminiKey}
-          onClearKey={handleClearGeminiKey}
-        />
-
-        {/* Custom Match Modal */}
-        <CustomMatchModal
-          isOpen={isCustomMatchModalOpen}
-          onClose={() => setIsCustomMatchModalOpen(false)}
-          onCreateCustomMatch={handleCreateCustomMatch}
-        />
-      </main>
+      </div>
     </div>
   );
 }

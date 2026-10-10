@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Play, Pause, Radio, ChevronRight, Activity } from "lucide-react";
-import { MatchSituation } from "@/data/match";
+import { Play, Pause, Radio, ChevronRight, Activity, HelpCircle } from "lucide-react";
+import { MatchSituation } from "@/data/types";
 
 interface MatchHeaderProps {
   matchData?: MatchSituation;
@@ -59,42 +59,46 @@ export function MatchHeader({
   return (
     <section className="w-full glass-panel rounded-3xl p-4 sm:p-5 shadow-xl space-y-4 relative overflow-hidden">
       {/* Top ambient illumination */}
-      <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/20 dark:via-white/20 to-transparent pointer-events-none" />
 
       {/* Row 1: League & Broadcast Controls */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          {/* Live indicator badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-400 font-bold text-[10px] tracking-wider uppercase shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-live-pulse" />
-            <span>LIVE</span>
+          {/* Honest Demo Match indicator badge */}
+          <div
+            role="status"
+            aria-label="Demo match with simulated real-time data"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs tracking-wider uppercase shrink-0"
+          >
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-live-pulse" />
+            <span>LIVE · DEMO MATCH</span>
           </div>
 
-          <span className="text-xs font-semibold text-text-muted truncate">
+          <span className="text-xs font-semibold text-muted truncate">
             {activeLeague}
           </span>
         </div>
 
-        {/* Live Match Simulation Toggle */}
+        {/* Live Match Simulation Toggle with >=44px touch target */}
         <button
           type="button"
           onClick={onToggleSimulation}
           title={isSimulating ? "Pause live match feed" : "Simulate live match play-by-play"}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer min-h-[32px] shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
             isSimulating
-              ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-400 shadow-sm"
-              : "bg-surface-raised/80 border-theme text-text-muted hover:text-foreground hover:border-white/20"
+              ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-600 dark:text-indigo-400 shadow-sm"
+              : "bg-surface-raised border-theme text-muted hover:text-foreground hover:border-border-focus"
           }`}
           aria-label={isSimulating ? "Pause match simulation" : "Simulate live match"}
         >
           {isSimulating ? (
             <>
-              <Pause className="w-3 h-3 text-indigo-400 animate-pulse" />
+              <Pause className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
               <span>Ticking Live</span>
             </>
           ) : (
             <>
-              <Play className="w-3 h-3 text-indigo-400" />
+              <Play className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               <span>Simulate</span>
             </>
           )}
@@ -105,7 +109,7 @@ export function MatchHeader({
       <div className="flex items-end justify-between gap-4 pt-1 pb-1">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted">
               {activeTeams[0]} vs {activeTeams[1]}
             </span>
           </div>
@@ -113,14 +117,14 @@ export function MatchHeader({
             <span className="text-4xl sm:text-5xl font-black tracking-tight tabular-nums text-foreground">
               {primaryScore}
             </span>
-            <span className="text-sm font-bold text-text-muted">
+            <span className="text-sm font-bold text-muted">
               {primaryLabel}
             </span>
           </div>
         </div>
 
         <div className="text-right space-y-0.5 shrink-0">
-          <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
+          <span className="text-xs font-semibold text-muted uppercase tracking-wider block">
             {sportName} Status
           </span>
           <span className="text-base sm:text-lg font-bold tabular-nums text-foreground block">
@@ -130,29 +134,44 @@ export function MatchHeader({
       </div>
 
       {/* Progress Bar with neon gradient */}
-      <div className="w-full bg-white/[0.04] h-1.5 rounded-full overflow-hidden border border-white/[0.06]">
+      <div className="w-full bg-surface-raised h-1.5 rounded-full overflow-hidden border border-theme">
         <div
           className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-rose-500 transition-all duration-700 ease-out"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
 
-      {/* Row 3: Live Win Probability Bar (Broadcast Style) */}
-      <div className="space-y-1.5 bg-black/25 p-3 rounded-2xl border border-white/[0.05]">
+      {/* Row 3: Live Win Probability Bar (Deterministic Estimate) */}
+      <div className="space-y-1.5 bg-surface-raised p-3 rounded-2xl border border-theme">
         <div className="flex items-center justify-between text-xs font-bold">
-          <span className="text-indigo-400 flex items-center gap-1 font-semibold">
-            <Activity className="w-3 h-3 text-indigo-400" />
+          <span className="text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-semibold">
+            <Activity className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             <span>{activeTeams[0]} {wp1}%</span>
           </span>
-          <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">
-            Win Probability
+
+          {/* Explicit "estimate" badge with tooltip */}
+          <span
+            title="Deterministic estimate computed from required run rate, resources, and match situation (not generated by AI)"
+            className="text-xs uppercase tracking-wider text-muted font-bold inline-flex items-center gap-1 cursor-help"
+          >
+            <span>Win Probability</span>
+            <span className="text-xs text-muted font-normal lowercase">(estimate)</span>
+            <HelpCircle className="w-3 h-3 text-muted inline" />
           </span>
-          <span className="text-amber-400 font-semibold">
+
+          <span className="text-amber-700 dark:text-amber-400 font-semibold">
             {wp2}% {activeTeams[1]}
           </span>
         </div>
 
-        <div className="w-full bg-white/[0.04] h-2 rounded-full overflow-hidden border border-white/[0.06] flex">
+        <div
+          className="w-full bg-slate-200 dark:bg-white/[0.08] h-2 rounded-full overflow-hidden border border-theme flex"
+          role="progressbar"
+          aria-valuenow={wp1}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Win probability estimate: ${activeTeams[0]} ${wp1}%, ${activeTeams[1]} ${wp2}%`}
+        >
           <div
             className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-700 ease-out"
             style={{ width: `${wp1}%` }}
@@ -165,24 +184,25 @@ export function MatchHeader({
       </div>
 
       {/* Row 4: Chase context line & "Catch me up" Action */}
-      <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-white/[0.06]">
-        <p className="text-xs font-medium text-text-muted leading-relaxed">
+      <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-theme">
+        <p className="text-xs font-medium text-muted leading-relaxed">
           {secondaryStatus}
         </p>
 
-        {/* Catch me up story button */}
+        {/* Catch me up story button with >=44px touch target */}
         <button
           type="button"
           onClick={onOpenStorySoFar}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-bold tracking-wide transition-all duration-150 active:scale-95 cursor-pointer min-h-[40px] shrink-0"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold tracking-wide transition-all duration-150 active:scale-95 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
           id="catch-me-up-btn"
           aria-label="Catch me up with the match story so far"
         >
-          <Radio className="w-3.5 h-3.5 text-indigo-400" />
+          <Radio className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
           <span>Match Recap</span>
-          <ChevronRight className="w-3.5 h-3.5 text-indigo-400/80" />
+          <ChevronRight className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
         </button>
       </div>
+
     </section>
   );
 }

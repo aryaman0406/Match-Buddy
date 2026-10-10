@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   X,
   Volume2,
   VolumeX,
-  Copy,
-  Check,
-  Share2,
   AlertCircle,
   Lightbulb,
 } from "lucide-react";
+import { speakText, stopSpeech } from "@/lib/speech";
 
 export interface BottomSheetData {
   title: string;
@@ -40,7 +38,6 @@ export function BottomSheet({
   isFallback,
   language,
 }: BottomSheetProps) {
-  const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
@@ -49,6 +46,19 @@ export function BottomSheet({
   const touchStartY = useRef<number | null>(null);
   const [dragOffset, setDragOffset] = useState<number>(0);
 
+  const handleClose = useCallback(() => {
+    stopSpeech();
+    setIsSpeaking(false);
+    onClose();
+  }, [onClose]);
+
+  // Stop speech when bottom sheet unmounts
+  useEffect(() => {
+    return () => {
+      stopSpeech();
+    };
+  }, []);
+
   // Focus trap & escape key handler
   useEffect(() => {
     if (isOpen) {
@@ -56,7 +66,7 @@ export function BottomSheet({
 
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
-          onClose();
+          handleClose();
         }
 
         if (e.key === "Tab" && sheetRef.current) {
@@ -89,55 +99,28 @@ export function BottomSheet({
         document.removeEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "";
         previouslyFocusedElement.current?.focus();
-        if (typeof window !== "undefined" && "speechSynthesis" in window) {
-          window.speechSynthesis.cancel();
-        }
+        stopSpeech();
       };
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   // Handle Speech Synthesis
   const handleToggleSpeech = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      alert("Text-to-speech is not supported on this browser.");
-      return;
-    }
-
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      stopSpeech();
       setIsSpeaking(false);
     } else {
       const textToRead = streamedText || data?.title || "";
       if (!textToRead) return;
 
-      const utterance = new SpeechSynthesisUtterance(textToRead);
-      utterance.rate = 0.95;
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-
-      window.speechSynthesis.speak(utterance);
-      setIsSpeaking(true);
+      speakText({
+        text: textToRead,
+        language,
+        onStart: () => setIsSpeaking(true),
+        onEnd: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      });
     }
-  };
-
-  // Copy answer to clipboard
-  const handleCopy = async () => {
-    if (!streamedText) return;
-    try {
-      await navigator.clipboard.writeText(streamedText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  // WhatsApp share
-  const handleShare = () => {
-    const textToShare = `🏆 *Match Buddy Insights*\n\n*${data?.title}*\n${streamedText}\n\n_Shared from Match Buddy_`;
-    const url = `https://wa.me/?text=${encodeURIComponent(textToShare)}`;
-    window.open(url, "_blank");
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -155,7 +138,7 @@ export function BottomSheet({
 
   const handleTouchEnd = () => {
     if (dragOffset > 90) {
-      onClose();
+      handleClose();
     }
     setDragOffset(0);
     touchStartY.current = null;
@@ -168,11 +151,11 @@ export function BottomSheet({
       role="dialog"
       aria-modal="true"
       aria-labelledby="sheet-title"
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed inset-0 z-50 flex items-end justify-center lg:hidden"
     >
       {/* Dimmed backdrop */}
       <div
-        onClick={onClose}
+        onClick={handleClose}
         className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity duration-200"
         aria-hidden="true"
       />
@@ -188,25 +171,28 @@ export function BottomSheet({
           transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
           transition: dragOffset > 0 ? "none" : "transform 240ms ease-out",
         }}
-        className="w-full max-w-[480px] bg-surface border-t border-white/[0.12] rounded-t-[32px] shadow-[0_-12px_48px_rgba(0,0,0,0.6)] z-10 animate-slide-up flex flex-col max-h-[85vh] overflow-hidden focus:outline-none"
+        className="w-full max-w-[480px] bg-surface border-t border-theme rounded-t-[32px] shadow-[0_-12px_48px_rgba(0,0,0,0.6)] z-10 animate-slide-up flex flex-col max-h-[85vh] overflow-hidden focus:outline-none"
       >
         {/* Drag handle */}
         <div className="w-full pt-3 pb-1 flex justify-center cursor-grab active:cursor-grabbing">
-          <div className="w-10 h-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors" />
+          <div className="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-white/20 hover:bg-slate-400 dark:hover:bg-white/30 transition-colors" />
         </div>
 
         {/* Header bar */}
-        <div className="px-5 pb-3.5 pt-1.5 flex items-start justify-between gap-3 border-b border-white/[0.06]">
+        <div className="px-5 pb-3.5 pt-1.5 flex items-start justify-between gap-3 border-b border-theme">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-text-muted uppercase tracking-wider">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-surface-raised border border-theme text-muted uppercase tracking-wider">
                 Match Intel
               </span>
 
               {isFallback && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
-                  <AlertCircle className="w-2.5 h-2.5" />
-                  <span>Verified Offline Fact</span>
+                <span
+                  role="status"
+                  className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  <span>Showing a saved explanation</span>
                 </span>
               )}
             </div>
@@ -219,17 +205,18 @@ export function BottomSheet({
             </h3>
 
             {data.subtitle && (
-              <p className="text-xs text-text-muted mt-0.5 truncate font-medium">
+              <p className="text-xs text-muted mt-0.5 truncate font-medium">
                 {data.subtitle}
               </p>
             )}
           </div>
 
+          {/* Close button with >=44px touch target */}
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close bottom sheet"
-            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] flex items-center justify-center text-text-muted hover:text-foreground transition-colors cursor-pointer"
+            className="min-w-[44px] min-h-[44px] rounded-full bg-surface-raised hover:bg-surface border border-theme flex items-center justify-center text-muted hover:text-foreground transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
           >
             <X className="w-4 h-4" />
           </button>
@@ -253,7 +240,7 @@ export function BottomSheet({
               <p className="whitespace-pre-line font-medium selection:bg-indigo-500/30 text-foreground/95">
                 {streamedText}
                 {isLoading && (
-                  <span className="inline-block w-1.5 h-4 ml-1 bg-indigo-400 animate-pulse align-middle" />
+                  <span className="inline-block w-1.5 h-4 ml-1 bg-indigo-500 dark:bg-indigo-400 animate-pulse align-middle" />
                 )}
               </p>
             )}
@@ -262,7 +249,7 @@ export function BottomSheet({
           {/* "Why it matters now" highlighted contextual box */}
           {data.whyItMatters && (
             <div className="context-highlight-box p-3.5 rounded-2xl space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
                 <Lightbulb className="w-3.5 h-3.5" />
                 <span>Tactical Context</span>
               </span>
@@ -272,25 +259,25 @@ export function BottomSheet({
             </div>
           )}
 
-          {/* Action Tools */}
-          <div className="pt-2 flex items-center justify-between border-t border-white/[0.06]">
+          {/* Action Tools with >=44px touch targets */}
+          <div className="pt-2 flex items-center justify-between border-t border-theme">
             <div className="flex items-center gap-2">
               {/* Speaker / Read Aloud */}
               <button
                 type="button"
                 onClick={handleToggleSpeech}
                 aria-label={isSpeaking ? "Stop audio commentary" : "Listen to audio commentary"}
-                className={`flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 ${
+                className={`flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
                   isSpeaking
-                    ? "bg-indigo-500 text-white border-indigo-500 shadow-sm"
-                    : "bg-white/[0.05] border-white/[0.08] text-text-muted hover:text-foreground"
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                    : "bg-surface-raised hover:bg-surface border border-theme text-muted hover:text-foreground shadow-sm"
                 }`}
               >
                 {isSpeaking ? (
                   <>
-                    <VolumeX className="w-3.5 h-3.5 text-white" />
+                    <VolumeX className="w-4 h-4 text-white" />
                     <span>Stop</span>
-                    <div className="flex items-center gap-0.5 ml-0.5">
+                    <div className="flex items-center gap-0.5 ml-1">
                       <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
                       <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse delay-75" />
                       <span className="w-0.5 h-2 bg-white rounded-full animate-pulse delay-150" />
@@ -298,57 +285,28 @@ export function BottomSheet({
                   </>
                 ) : (
                   <>
-                    <Volume2 className="w-3.5 h-3.5" />
-                    <span>Listen</span>
+                    <Volume2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span className="font-semibold">Listen</span>
                   </>
                 )}
-              </button>
-
-              {/* Copy Button */}
-              <button
-                type="button"
-                onClick={handleCopy}
-                aria-label="Copy explanation"
-                className="flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-xl bg-white/[0.05] border border-white/[0.08] text-text-muted hover:text-foreground text-xs font-semibold transition-all cursor-pointer active:scale-95"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-emerald-400">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy</span>
-                  </>
-                )}
-              </button>
-
-              {/* WhatsApp Share Button */}
-              <button
-                type="button"
-                onClick={handleShare}
-                aria-label="Share on WhatsApp"
-                className="flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-xl bg-white/[0.05] border border-white/[0.08] text-text-muted hover:text-foreground text-xs font-semibold transition-all cursor-pointer active:scale-95"
-              >
-                <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Share</span>
               </button>
             </div>
 
-            <span className="text-[10px] font-bold text-text-muted uppercase px-2 py-1 rounded-lg bg-white/[0.05] border border-white/[0.06]">
+            <span className="text-xs font-bold text-muted uppercase px-2.5 py-1.5 rounded-lg bg-surface-raised border border-theme">
               {language === "hinglish" ? "Hinglish" : "English"}
             </span>
           </div>
 
+
           {/* Clean footer line */}
           <div className="text-center pt-1 pb-1">
-            <p className="text-[10px] text-text-muted/70 font-medium">
-              Grounded in verified live match data &amp; tactical context.
+            <p className="text-xs text-muted/80 font-medium">
+              Grounded in curated dataset &amp; match context.
             </p>
           </div>
         </div>
       </div>
+
     </div>
   );
 }

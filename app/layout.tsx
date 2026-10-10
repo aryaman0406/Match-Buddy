@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,8 +22,8 @@ export const metadata: Metadata = {
       "Tired of feeling clueless during matches? Tap any player, event, or rule to get instant explanations in English or Hinglish across any sport.",
     url: "https://match-buddy.vercel.app",
     siteName: "Match Buddy",
-    type: "website",
     locale: "en_US",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
@@ -38,10 +39,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" data-theme="dark" className={inter.variable} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="theme-color" content="#0B0E14" />
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("match-buddy-theme")||"dark";document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className="font-sans antialiased bg-background text-foreground min-h-screen flex flex-col items-center justify-start">
         {children}
@@ -49,3 +57,4 @@ export default function RootLayout({
     </html>
   );
 }
+

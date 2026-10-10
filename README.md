@@ -1,88 +1,192 @@
-# Match Buddy 🏆
-> **Intelligent AI Companion for Live Sports Across All Games & Teams**
+# Match Buddy 🏏⚽🏀
+
+**Match Buddy** is a lightning-fast, production-hardened AI live match companion built for casual and passionate sports fans watching live broadcasts with friends or family.
 
 ---
 
-## 📌 1. The Fan Problem
-Watching live sports with friends or family can be intimidating for casual fans. When commentators shout *"That was a free hit"*, *"VAR overturned the penalty"*, *"Illegal screen on the pick-and-roll"*, or *"DRS flap is open in the Nouvelle Chicane"*, casual spectators often feel left behind. Googling during live action distracts from the excitement, and asking friends repeatedly feels awkward.
+## 1. The Fan Problem & Target Persona
 
-**Match Buddy** eliminates that friction. It acts like an intuitive, sports-savvy companion right by your side:
-- **Instant Player Profiles:** Tap any player on field across any sport for a 3-sentence breakdown explaining **who they are, key highlights, and why they matter right now**.
-- **Tactical Moment & Rule Breakdowns:** Tap any live event (Free Hit, Offside, VAR, Red Card, Shot Clock, Break Point, Super Tackle, Pit Strategy) for clear, jargon-free context.
-- **Multi-Sport & Multi-Team Engine:** Seamlessly toggle between **Cricket**, **Football (El Clásico)**, **Basketball (NBA)**, **Tennis (Wimbledon)**, **Formula 1 (Monaco GP)**, **Kabaddi (PKL)**, or create **Any Custom Match**.
-- **Bilingual & Multi-Persona:** Switch between **English** and **Hinglish** (Hindi in Roman script) with three distinct companion personas: **🤝 Casual Fan**, **🧠 Tactical Analyst**, and **🇮🇳 Desi Couch Buddy**.
-
----
-
-## ✨ 2. Key Architecture & Features
-
-### ⚡ 1. Live Match Engine & Win Probability
-- **Universal Multi-Sport Scoreboard:** Dynamically renders sport-specific metrics (Overs & Runs in Cricket, Goals & Half in Football, Quarters & Shot Clock in Basketball, Sets & Games in Tennis, Laps in F1).
-- **Animated Win Probability Meter:** Real-time dual-gradient win predictor that dynamically recalculates as match events occur.
-- **Universal Live Match Auto-Simulation:** Click **"Simulate Live"** on *any* sport to watch the score tick, win probabilities shift, active performer stats update, and new milestone events drop into the timeline.
-
-### 🤖 2. Google Gemini AI Integration
-- Powered by Google's fastest generation model: **`gemini-2.0-flash`** (or `gemini-1.5-flash` / `gemini-1.5-pro`).
-- Real-time word-by-word streaming through Next.js server route `/api/explain`.
-- **Flexible Key Configuration:**
-  - **In-App GUI Setup:** Users can paste their Gemini API Key directly into the header settings modal (stored securely in `localStorage` without needing a server restart).
-  - **Latency Probe Test:** Includes a one-click **"Test Key Connection"** button that pings the model and displays live latency.
-  - **Environment Variable:** Also supports `GEMINI_API_KEY` in `.env.local` for server-side persistence.
-  - **Zero-Failure Offline Grounding:** If offline or running without a key, curated verified sports databases serve rich streaming fallbacks.
-
-### 🎙️ 3. Interactive Audio & Bottom Sheet
-- **In-Browser Speech Synthesis:** One-tap **"Listen"** button with animated audio equalizer waves for hands-free audio commentary.
-- **Focus-Trapped & Accessible:** Touch swipe-down dismissal, ESC key listener, focus trapping, and ARIA live regions.
-- **One-Tap Actions:** WhatsApp sharing and clipboard copying with feedback.
+### The Persona
+- **Who:** A casual or social fan watching an intense live sports match (India vs Australia in Cricket, El Clásico in Football, or Lakers vs Warriors in the NBA) alongside passionate friends.
+- **The Pain Point:** Whenever an unfamiliar player steps onto the pitch (e.g., *"Wait, who is Hardik Pandya again? Why does he have a strike mark?"*) or a technical umpire ruling occurs (e.g., *"What is DLS method?"*, *"Why was that not offside?"*), they feel hesitant or awkward interrupting the group to ask. Searching Google or Wikipedia returns dense, dry encyclopedic articles that kill match momentum.
+- **The Solution:** Match Buddy provides a single-tap broadcast companion:
+  - **Tap any player card** for a concise, 2-line intro explaining their role, form, and tactical significance right now.
+  - **Tap any timeline event** or type a query for an instant 2-line explanation in plain **English** or conversational **Hinglish**.
+  - **Live Win Probability Meter** calculated deterministically using situation metrics (required run rate vs resources), not hallucinated by an LLM.
 
 ---
 
-## 🛠️ 3. Tech Stack
+## 2. What the App Does
 
-| Layer | Technology | Details |
-|---|---|---|
-| **Framework** | Next.js 16 (Turbopack, App Router) | React 19, Server & Client Components |
-| **Language** | TypeScript | Strictly typed interfaces for all sport configurations |
-| **Styling** | Tailwind CSS & Vanilla CSS | Curated HSL tokens, glassmorphism, native dark/light themes |
-| **AI SDK** | `@google/generative-ai` | Streaming response generation with sports guardrails |
-| **Icons** | `lucide-react` | Ultra-clean iconography |
+- **Multi-Sport Coverage:** Dedicated tabs for **Cricket** (IND vs AUS), **Football** (Real Madrid vs Barcelona), and **Basketball** (Lakers vs Warriors).
+- **Dual-Language Modes:** Instant toggle between English and conversational Hinglish (`EN` / `हिंग`).
+- **3 Fan Personas:** Casual Fan (friendly & accessible), Tactical Analyst (data & matchups), and Desi Buddy (cricket banter & masala).
+- **Deterministic Win Probability:** A pure mathematical calculation (RRR vs resources in cricket, score difference vs time in football/basketball).
+- **Graceful Offline Fallbacks:** Zero blank screens. If offline, rate-limited, timed out, or unconfigured, the app falls back to curated verified facts with a clear note.
+- **Audio Read-Aloud & WhatsApp Share:** One-tap text-to-speech commentary and formatted match updates to share with friends.
+- **Desktop & Mobile Responsive:** Centered mobile container on phones; elegant two-column layout on widescreen displays (`≥ 1024px`).
 
 ---
 
-## 🚀 4. How to Run Locally
+## 3. Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client ["Browser (Next.js Client Components)"]
+        UI["Match UI (Header, OnField, Timeline, AskBar)"]
+        State["State Management & AbortController"]
+        UI --> State
+    end
+
+    subgraph Server ["Server-Side Layer (Next.js Route Handlers)"]
+        API["POST /api/explain"]
+        RateLimit["In-Memory Rate Limiter (20 req / 10 min / IP)"]
+        Cache["In-Memory Response Cache (30-min TTL)"]
+        Validator["Input Validator (Kind, Lang, Persona, Max 200 chars)"]
+        Prompts["Prompt Builders (/prompts)"]
+        
+        API --> RateLimit
+        RateLimit --> Validator
+        Validator --> Cache
+        Cache -- Cache Hit --> API
+        Cache -- Cache Miss --> Prompts
+    end
+
+    subgraph DataLayer ["Data Layer (MatchDataProvider Interface)"]
+        Interface["MatchDataProvider Interface"]
+        MockProvider["MockMatchDataProvider"]
+        LiveProvider["Future: LiveFeedDataProvider (WebSockets/REST)"]
+        
+        Interface --> MockProvider
+        Interface -.-> LiveProvider
+        MockProvider --> SportData["data/sports/{cricket,football,basketball}.ts"]
+    end
+
+    subgraph AI ["Upstream LLM"]
+        Gemini["Google Gemini API (gemini-2.0-flash)"]
+    end
+
+    State -- "fetch('/api/explain')\n(Strict 10s Timeout Safeguard)" --> API
+    State -. "Direct fallback on timeout/error" .-> Interface
+    Prompts -- "Server-side Key & System Prompt" --> Gemini
+    Gemini -- "ReadableStream chunks" --> API
+    API -- "Streamed Response (text/plain)" --> State
+```
+
+---
+
+## 4. Setup and Run Locally
 
 ### Prerequisites
-- Node.js `v18+` or `v20+` / `v22+`
-- npm
+- Node.js `20.x` or later
+- npm `10.x` or later
 
-### Quick Start
-1. **Clone & install dependencies:**
+### Installation Steps
+
+1. **Clone the repository:**
    ```bash
    git clone <repo-url>
    cd "Match Buddy"
+   ```
+
+2. **Install dependencies:**
+   ```bash
    npm install
    ```
 
-2. **Configure Gemini API Key (Optional):**
-   Add your key to `.env.local`:
+3. **Configure Environment Variables:**
+   Copy `.env.example` to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Add your Google Gemini API key:
    ```env
-   GEMINI_API_KEY=your_key_from_google_ai_studio
+   GEMINI_API_KEY=your_gemini_api_key_here
    GEMINI_MODEL=gemini-2.0-flash
    ```
-   *(Or simply run the app and click the **`Gemini Key`** button in the top bar!)*
+   *(Note: The app will run smoothly with curated fallbacks even if no API key is supplied!)*
 
-3. **Run development server:**
+4. **Run the Development Server:**
    ```bash
    npm run dev
    ```
-   Open [http://localhost:3000](http://localhost:3000) on your desktop browser or mobile screen emulator.
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+5. **Run Unit Tests:**
+   ```bash
+   npm test
+   ```
+
+6. **Create Production Build:**
+   ```bash
+   npm run build
+   ```
 
 ---
 
-## 🧪 5. Testing & Verification
+## 5. Environment Variables
 
-Run the full Next.js production build and TypeScript audit:
-```bash
-npm run build
-```
-Builds statically and dynamically in under 1 second with **0 errors**.
+| Variable | Description | Default | Required? |
+| :--- | :--- | :--- | :--- |
+| `GEMINI_API_KEY` | Google Gemini API key used by the server route | *(empty)* | Optional (fallbacks engaged if missing) |
+| `GEMINI_MODEL` | Gemini generative model version | `gemini-2.0-flash` | Optional |
+
+> **Security Guardrail:** All Gemini API keys are read strictly on the server (`process.env.GEMINI_API_KEY`). The browser client never touches, receives, or stores API keys. `.env*` files are strictly gitignored.
+
+---
+
+## 6. How to Add a Team, Player, or Event
+
+Because the data layer is decoupled via the `SportMatchConfig` schema and `MatchDataProvider` interface, **adding or editing sport data requires ZERO component changes**:
+
+1. Open the sport file in `data/sports/` (e.g., `data/sports/cricket.ts` or create a new sport module):
+2. Add the player to the `players` array:
+   ```ts
+   {
+     id: "jasprit-bumrah",
+     name: "Jasprit Bumrah",
+     role: "Bowler",
+     onField: "3.4-1-14-2",
+     country: "India",
+     formats: ["Test", "ODI", "T20I"],
+     avatarInitials: "JB",
+     keyFacts: [
+       "// TODO verify",
+       "Premier yorker specialist with unique hyperextended bowling action",
+       "Player of the Tournament at the 2024 ICC Men's T20 World Cup"
+     ],
+     fallbackIntro: {
+       en: "Jasprit Bumrah is India's strike pace ace who suffocates run scoring at the death.",
+       hinglish: "Jasprit Bumrah India ke world-class pacer hain jinki deadly yorkers game badal deti hain."
+     }
+   }
+   ```
+3. Add any event to the `events` array or rule to `rulesDictionary`.
+4. The UI automatically displays the player card, initializes the strike badge, and hooks up the AI and offline fallbacks without changing any TSX code.
+
+---
+
+## 7. Key Design Decisions
+
+1. **Curated Facts + AI Context:**
+   - LLMs can easily hallucinate career statistics or birthplace facts. Match Buddy feeds verified facts from the curated dataset into the Gemini prompt so the AI only explains tactical significance in context.
+2. **Deterministic Win Probability:**
+   - Match win probabilities are computed with pure mathematical functions (`lib/winProbability.ts`) evaluating required run rate, balls left, and wickets in hand. This ensures numbers stay mathematically consistent as the score ticks.
+3. **Multi-Tier Fallbacks & In-Memory Caching:**
+   - If an API request fails, hits rate limits (429), or exceeds the 10-second timeout, the UI instantly displays the pre-calculated fallback text with a transparent note: `"Showing a saved explanation"`.
+   - Repeated clicks or reviewer traffic hit a 30-minute in-memory LRU cache (`lib/cache.ts`), saving quota and returning instant responses.
+4. **Server-Side Security:**
+   - The browser client never stores API keys in `localStorage` or passes them over headers. All calls route through `/api/explain` with IP rate limiting and 200-character input sanitization.
+5. **Aesthetic & Accessibility Standards:**
+   - Rich dark theme with glassmorphism cards and neon gradients.
+   - Strictly conforms to WCAG AA contrast (≥ 4.5:1), touch targets ≥ 44px, and minimum text size of 12px.
+   - Dynamic `lang="hi-Latn"` attribute when Hinglish commentary is displayed.
+   - Respects `prefers-reduced-motion`.
+
+---
+
+## 8. Honest Limitations
+
+- **Simulated Match Feeds:** This build uses curated mock match situations and simulated play-by-play timelines rather than a paid real-time WebSocket broadcast provider (e.g., Sportradar / Opta).
+- **AI Can Make Mistakes:** While player facts are grounded in verified datasets, generative AI can occasionally misinterpret nuances.
+- **In-Memory Cache & Rate Limiting:** The rate limiter (20 requests per 10 minutes) and 30-minute response cache run in server process memory and will reset upon container restart or deployment on serverless environments without Redis.

@@ -1,0 +1,195 @@
+import { SportMatchConfig } from "../types";
+
+export const basketballMatch: SportMatchConfig = {
+  id: "basketball-lakers-warriors",
+  sportId: "basketball",
+  sportName: "Basketball",
+  sportIcon: "🏀",
+  matchTitle: "LAL vs GSW",
+  seriesOrLeague: "NBA Regular Season · Crypto.com Arena, Los Angeles",
+  teams: ["LAL", "GSW"],
+  teamFullNames: ["Los Angeles Lakers", "Golden State Warriors"],
+  winProbability: { team1: 72, team2: 28 },
+  scoreDisplay: {
+    primary: "108 - 104",
+    primaryLabel: "LAL vs GSW",
+    progress: "Q4 2:45",
+    progressPercent: 94,
+    secondaryStatus: "Lakers lead by 4 · Warriors call 20s timeout",
+  },
+  // TODO verify: Basketball player roster
+  players: [
+    {
+      id: "lebron-james",
+      name: "LeBron James",
+      role: "Forward",
+      onField: "28 Pts, 8 Reb, 9 Ast",
+      country: "USA",
+      homeState: "Ohio",
+      formats: ["NBA", "Team USA"],
+      isStriker: true,
+      avatarInitials: "LJ",
+      // TODO verify: LeBron James key facts
+      keyFacts: [
+        "NBA's all-time leading scorer with 40,000+ career regular-season points",
+        "4-time NBA Champion, 4-time Finals MVP, and 4-time regular-season MVP",
+        "Unmatched basketball IQ and freight-train downhill transition drives",
+      ],
+      fallbackIntro: {
+        en: "LeBron James is the NBA's all-time scoring leader who commands the floor with unmatched court vision. Sitting on 28 points and 9 assists, he orchestrates every fourth-quarter possession for the Lakers.",
+        hinglish: "LeBron James basketball history ke sabse bade legend aur all-time top scorer hain. 28 points aur 9 assists bana chuke hain aur fourth quarter ke crucial moments me game unhi ke hath me hai.",
+      },
+    },
+    {
+      id: "anthony-davis",
+      name: "Anthony Davis",
+      role: "Center",
+      onField: "22 Pts, 14 Reb, 4 Blk",
+      country: "USA",
+      homeState: "Illinois",
+      formats: ["NBA", "Team USA"],
+      isStriker: false,
+      avatarInitials: "AD",
+      // TODO verify: Anthony Davis key facts
+      keyFacts: [
+        "Elite two-way big man and premier rim protector in the NBA",
+        "9-time NBA All-Star and 2020 NBA Champion",
+        "Dominates the paint with rim-rattling lobs and chasedown blocks",
+      ],
+      fallbackIntro: {
+        en: "Anthony Davis is the defensive anchor of the Lakers whose 14 rebounds and 4 blocks shut down the paint completely. His rim protection prevents easy floaters and fuels fast-break points.",
+        hinglish: "Anthony Davis Lakers ke sabse bade defensive shield hain jinhone 14 rebounds aur 4 blocks kiye hain. Paint me unki presence Warriors ke players ko easy basket banane se rok rahi hai.",
+      },
+    },
+    {
+      id: "stephen-curry",
+      name: "Stephen Curry",
+      role: "Guard",
+      onField: "32 Pts, 7/13 3PM",
+      country: "USA",
+      homeState: "North Carolina",
+      formats: ["NBA", "Team USA"],
+      isStriker: false,
+      avatarInitials: "SC",
+      // TODO verify: Stephen Curry key facts
+      keyFacts: [
+        "The greatest shooter in basketball history, single-handedly revolutionizing the 3-point game",
+        "4-time NBA Champion and 2-time regular-season MVP",
+        "Limitless shooting range extending well beyond 35 feet",
+      ],
+      fallbackIntro: {
+        en: "Stephen Curry is the greatest 3-point marksman in history whose limitless range stretches defenses past half-court. With 7 triples tonight and Warriors down 4, every screen is designed to free him.",
+        hinglish: "Steph Curry basketball ke sabse deadly 3-point shooter hain. 7 three-pointers maar chuke hain aur aakhri do minute me unka ek single shot match ko tie ya jeeta sakta hai.",
+      },
+    },
+    {
+      id: "draymond-green",
+      name: "Draymond Green",
+      role: "Forward",
+      onField: "8 Pts, 9 Reb, 10 Ast, 2 Stl",
+      country: "USA",
+      homeState: "Michigan",
+      formats: ["NBA", "Team USA"],
+      isStriker: false,
+      avatarInitials: "DG",
+      // TODO verify: Draymond Green key facts
+      keyFacts: [
+        "Former NBA Defensive Player of the Year and vocal heartbeat of the Warriors dynasty",
+        "4-time NBA Champion with unmatched screening and playmaking from the forward spot",
+        "Master of quarterbacking team defense and pushing the transition pace",
+      ],
+      fallbackIntro: {
+        en: "Draymond Green is Golden State's emotional heartbeat and defensive mastermind who sets the bone-crunching screens that liberate Curry. He directs defensive switches to keep the Warriors within striking distance.",
+        hinglish: "Draymond Green Warriors ke defensive mastermind hain jo team ke saare passes aur screens control karte hain. Curry ko open shot dilane me unka sabse bada role hota hai.",
+      },
+    },
+  ],
+  events: [
+    {
+      id: "evt-curry-three",
+      over: "Q4 3:12",
+      type: "free-hit",
+      title: "Curry Step-Back 3-Pointer!",
+      term: "3-Point Shot",
+      badgeText: "DEEP THREE",
+      badgeColor: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+      fallbackExplain: {
+        en: "Curry used a crossover dribble and stepped back behind the 24-foot arc to drill an off-balance three-pointer, cutting the Lakers lead to just 4 points.",
+        hinglish: "Curry ne defender ko crossover se jhulaya aur 24-foot ki line ke peeche se step-back 3-pointer daal diya! Lead ab sirf 4 points ki reh gayi hai.",
+      },
+    },
+  ],
+  storyFallback: {
+    en: "The game was a back-and-forth dogfight through three quarters. LeBron and Davis dominated inside the paint to build a 9-point cushion, but Steph Curry responded with three clutch fourth-quarter triples. With 2:45 remaining, the Lakers cling to a tense 108-104 lead.",
+    hinglish: "Teeno quarters tak dono teams barabar chal rahi thi. Fourth quarter me LeBron aur Davis ne paint me control banaya, par Steph Curry ne clutch 3-pointers maare. Ab 2:45 minutes bache hain aur match kaafi tight hai.",
+  },
+  quickQuestions: ["What is the Shot Clock rule?", "What is a Triple-Double?", "What is Traveling?", "What is Goaltending?"],
+  rulesDictionary: {
+    "shot clock": {
+      term: "24-Second Shot Clock",
+      en: "The offensive team has 24 seconds from gaining possession to attempt a shot that at least touches the rim, otherwise a turnover is called.",
+      hinglish: "Attacking team ko ball milne ke baad 24 seconds me rim pe shot lagana padta hai, warna ball dusri team ko mil jaati hai.",
+    },
+    "triple-double": {
+      term: "Triple-Double",
+      en: "Achieving double-digit figures (10 or more) in three of the five statistical categories: points, rebounds, assists, steals, or blocks.",
+      hinglish: "Ek match me 5 stats (points, rebounds, assists, steals, blocks) me se kisi 3 me 10 ya usse zyada score karna.",
+    },
+    traveling: {
+      term: "Traveling Violation",
+      en: "Taking more than two steps without dribbling the basketball or illegally moving the pivot foot once established.",
+      hinglish: "Bina ball bounce kiye 2 se zyada steps chalna violation hota hai aur ball doosri team ko mil jaati hai.",
+    },
+    goaltending: {
+      term: "Goaltending",
+      en: "Illegally touching the basketball on its downward trajectory towards the rim, or when it is directly above the cylinder.",
+      hinglish: "Ball jab basket ki taraf neeche aa rahi ho tab use touch karna illegal hai, aur opponent ko points de diye jaate hain.",
+    },
+  },
+  simulationSequence: [
+    {
+      scorePrimary: "110 - 107",
+      progressText: "Q4 1:15",
+      progressPercent: 97,
+      secondaryStatus: "Curry hits another clutch triple!",
+      activePerformerId: "stephen-curry",
+      winProbability: { team1: 65, team2: 35 },
+      playerStatsUpdates: { "stephen-curry": "35 Pts, 8/14 3PM" },
+      newEvent: {
+        id: "sim-bb-curry-clutch",
+        over: "Q4 1:15",
+        type: "free-hit",
+        title: "CURRY PULL-UP 3-POINTER! 1-POSSESSION GAME",
+        term: "Pull-Up 3-Pointer",
+        badgeText: "CLUTCH THREE",
+        badgeColor: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+        fallbackExplain: {
+          en: "Steph Curry pulled up on the fastbreak from 28 feet out to drain his 8th triple, cutting the deficit to a single possession.",
+          hinglish: "Curry ne fastbreak par 28 feet door se pull-up three-pointer daal diya! Match sirf 3 point ka reh gaya hai.",
+        },
+      },
+    },
+    {
+      scorePrimary: "112 - 107",
+      progressText: "Q4 0:24",
+      progressPercent: 99,
+      secondaryStatus: "LeBron and-one drive seals it!",
+      activePerformerId: "lebron-james",
+      winProbability: { team1: 96, team2: 4 },
+      playerStatsUpdates: { "lebron-james": "31 Pts, 9 Reb, 10 Ast" },
+      newEvent: {
+        id: "sim-bb-lebron-andone",
+        over: "Q4 0:24",
+        type: "free-hit",
+        title: "LEBRON AND-ONE DOWNHILL DRIVE!",
+        term: "Basket + Free Throw (And-One)",
+        badgeText: "CLUTCH AND-1",
+        badgeColor: "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30",
+        fallbackExplain: {
+          en: "LeBron James absorbed contact through Draymond Green to finish the layup off the glass and hit the ensuing free throw.",
+          hinglish: "LeBron ne foul hone ke bawajood basket complete kiya aur free throw se lead 5 points ki kar di!",
+        },
+      },
+    },
+  ],
+};
