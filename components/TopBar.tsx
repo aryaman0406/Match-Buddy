@@ -81,6 +81,7 @@ export function TopBar({
             suppressHydrationWarning
             onClick={() => onLanguageChange("en")}
             aria-pressed={language === "en"}
+            aria-label="English"
             className={`px-3 py-1.5 min-h-[34px] rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
               language === "en"
                 ? "bg-indigo-600 text-white shadow-sm"
@@ -94,13 +95,14 @@ export function TopBar({
             suppressHydrationWarning
             onClick={() => onLanguageChange("hinglish")}
             aria-pressed={language === "hinglish"}
+            aria-label="Hinglish"
             className={`px-3 py-1.5 min-h-[34px] rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
               language === "hinglish"
                 ? "bg-indigo-600 text-white shadow-sm"
                 : "text-muted hover:text-foreground"
             }`}
           >
-            हिंग
+            Hinglish
           </button>
         </div>
 

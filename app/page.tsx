@@ -414,6 +414,21 @@ export default function Home() {
     setIsSheetOpen(false);
   };
 
+  // Auto-load striker intro on initial page load
+  const hasAutoLoadedStriker = useRef(false);
+  useEffect(() => {
+    if (!hasAutoLoadedStriker.current) {
+      hasAutoLoadedStriker.current = true;
+      const striker = currentMatch.players.find((p) => p.isStriker) || currentMatch.players[0];
+      if (striker) {
+        const timer = setTimeout(() => {
+          handleSelectPlayer(striker);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Live match auto-simulation (deterministic probability updates)
   useEffect(() => {
     if (!isSimulating) return;
