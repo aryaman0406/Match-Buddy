@@ -7,8 +7,6 @@ import { buildSystemPrompt } from "@/prompts/system";
 import { buildQuestionPrompt } from "@/prompts/question";
 import { buildStoryPrompt } from "@/prompts/story";
 
-import generatedAnswersJson from "@/data/generated/answers.json";
-
 import { cricketMatch } from "@/data/sports/cricket";
 import { footballMatch } from "@/data/sports/football";
 import { basketballMatch } from "@/data/sports/basketball";
@@ -83,33 +81,8 @@ export async function POST(req: NextRequest) {
   const { kind, id, text, language, persona, sport, matchContext, playerData, eventData } =
     validation.data;
 
-  // 3. For players and events: check pre-generated file first, then fall back to saved text
+  // 3. For players and events: return saved fallback text stream
   if (kind === "player" || kind === "event") {
-    const normSport = sport.toLowerCase().includes("cricket")
-      ? "cricket"
-      : sport.toLowerCase().includes("football")
-      ? "football"
-      : sport.toLowerCase().includes("basketball")
-      ? "basketball"
-      : sport.toLowerCase();
-
-    const answersMap = generatedAnswersJson as Record<
-      string,
-      Record<string, Record<string, Record<string, string>>>
-    >;
-    const preGenerated = id ? answersMap?.[normSport]?.[id]?.[kind]?.[language] : undefined;
-
-    if (preGenerated && preGenerated.trim()) {
-      return new Response(createSimulatedStream(preGenerated.trim()), {
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "X-Review-Label": "AI-written, reviewed",
-          "X-Source": "generated",
-        },
-      });
-    }
-
-    // Keep existing saved fallbacks as a last resort (Use live Gemini only for typed questions)
     let savedFallback = "";
     if (kind === "player") {
       const allPlayers = [...cricketMatch.players, ...footballMatch.players, ...basketballMatch.players];

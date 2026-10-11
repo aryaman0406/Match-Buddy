@@ -97,21 +97,6 @@ describe("Phase Tags, Categories & Fallback Text Polish Suite", () => {
     expect(pageContent).not.toContain("breakdown a match moment");
   });
 
-  it("Pre-generated answers script and data file exist", () => {
-    const scriptPath = path.join(process.cwd(), "scripts", "generate-answers.ts");
-    const jsonPath = path.join(process.cwd(), "data", "generated", "answers.json");
-
-    expect(fs.existsSync(scriptPath)).toBe(true);
-    expect(fs.existsSync(jsonPath)).toBe(true);
-
-    const scriptContent = fs.readFileSync(scriptPath, "utf-8");
-    expect(scriptContent).toContain("OUTPUT_PATH");
-    expect(scriptContent).toContain("HARD_CAP");
-    expect(scriptContent).toContain("DELAY_MS");
-    expect(scriptContent.toLowerCase()).toContain("resource_exhausted");
-    expect(scriptContent).not.toContain("AIzaSy"); // No hardcoded API key
-  });
-
   it("Metadata in app/layout.tsx mentions only Cricket, Football, and Basketball with canonical & og:image", () => {
     const layoutContent = fs.readFileSync(path.join(process.cwd(), "app", "layout.tsx"), "utf-8");
 

@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run",
-    "generate:answers": "jiti scripts/generate-answers.ts"
+    "test": "vitest run"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
