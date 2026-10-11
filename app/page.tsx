@@ -389,6 +389,7 @@ export default function Home() {
   };
 
   const handleAskQuestion = (queryText: string) => {
+    const playingSurface = currentMatch.sportId === "basketball" ? "court" : "pitch";
     const data: BottomSheetData = {
       title: `"${queryText}"`,
       subtitle: `${currentMatch.sportName} Companion Breakdown`,
@@ -396,8 +397,8 @@ export default function Home() {
       queryText,
       whyItMatters:
         language === "hinglish"
-          ? "Iss sports concept ka seedha asar team ki strategy aur score par padta hai."
-          : "Understanding this concept unlocks the tactical decisions made on the pitch.",
+          ? "Iss sports rule ka seedha asar team ki strategy aur score par padta hai."
+          : `Understanding this rule unlocks tactical decisions made on the ${playingSurface}.`,
     };
 
     setSheetData(data);
@@ -746,7 +747,11 @@ export default function Home() {
                     Tap any player, event, or rule
                   </h4>
                   <p className="text-xs text-muted max-w-xs leading-relaxed">
-                    Select any batter or bowler on the pitch, break down a match moment, or ask a question below to see instant 2-line AI explanations.
+                    {currentMatch.sportId === "basketball"
+                      ? "Select any starter or playmaker on the court, break down a match moment, or ask a question below to see instant 2-line AI explanations."
+                      : currentMatch.sportId === "football"
+                      ? "Select any attacker or midfielder on the pitch, break down a match moment, or ask a question below to see instant 2-line AI explanations."
+                      : "Select any batter or bowler on the pitch, break down a match moment, or ask a question below to see instant 2-line AI explanations."}
                   </p>
                 </div>
               )}

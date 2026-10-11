@@ -24,34 +24,56 @@ export function OnField({
   let label1 = group1Label;
   let label2 = group2Label;
 
+  const s = sportName.toLowerCase();
+  const isBasketball = s.includes("basketball");
+
   if (!label1 || !label2) {
-    const s = sportName.toLowerCase();
     if (s.includes("cricket")) {
       label1 = "Batting Lineup";
       label2 = "Bowling Attack";
     } else if (s.includes("football") || s.includes("soccer")) {
-      label1 = "Attackers & Playmakers";
-      label2 = "Rivals & Defenders";
-    } else if (s.includes("basketball")) {
-      label1 = "On-Court Scorers";
-      label2 = "Opponent Key Rivals";
+      label1 = "Real Madrid";
+      label2 = "Barcelona";
+    } else if (isBasketball) {
+      label1 = "Los Angeles Lakers";
+      label2 = "Golden State Warriors";
     } else {
       label1 = "Key Starters";
       label2 = "Opponent Rivals";
     }
   }
 
-  const group1Players = players.filter((p) =>
-    ["Batter", "Attacker", "Forward"].includes(p.role)
-  );
-  const group2Players = players.filter((p) =>
-    ["Bowler", "Midfielder", "Defender", "Goalkeeper", "Guard", "Center"].includes(p.role)
-  );
+  let displayGroup1: Player[];
+  let displayGroup2: Player[];
 
-  const displayGroup1 =
-    group1Players.length > 0 ? group1Players : players.slice(0, Math.ceil(players.length / 2));
-  const displayGroup2 =
-    group2Players.length > 0 ? group2Players : players.slice(Math.ceil(players.length / 2));
+  if (isBasketball) {
+    displayGroup1 = players.filter((p) => p.id === "lebron-james" || p.id === "austin-reaves");
+    displayGroup2 = players.filter((p) => p.id === "stephen-curry" || p.id === "draymond-green");
+    if (displayGroup1.length === 0 && displayGroup2.length === 0) {
+      displayGroup1 = players.slice(0, Math.ceil(players.length / 2));
+      displayGroup2 = players.slice(Math.ceil(players.length / 2));
+    }
+  } else if (s.includes("football") || s.includes("soccer")) {
+    displayGroup1 = players.filter((p) => p.id === "vinicius-jr" || p.id === "jude-bellingham");
+    displayGroup2 = players.filter((p) => p.id === "robert-lewandowski" || p.id === "lamine-yamal");
+    if (displayGroup1.length === 0 && displayGroup2.length === 0) {
+      displayGroup1 = players.slice(0, Math.ceil(players.length / 2));
+      displayGroup2 = players.slice(Math.ceil(players.length / 2));
+    }
+  } else {
+    const group1Players = players.filter((p) =>
+      ["Batter", "Attacker", "Forward"].includes(p.role)
+    );
+    const group2Players = players.filter((p) =>
+      ["Bowler", "Midfielder", "Defender", "Goalkeeper", "Guard", "Center"].includes(p.role)
+    );
+    displayGroup1 =
+      group1Players.length > 0 ? group1Players : players.slice(0, Math.ceil(players.length / 2));
+    displayGroup2 =
+      group2Players.length > 0 ? group2Players : players.slice(Math.ceil(players.length / 2));
+  }
+
+  const surfaceName = isBasketball ? "Court" : "Pitch";
 
   return (
     <section className="w-full space-y-4" aria-labelledby="on-field-heading">
@@ -60,7 +82,7 @@ export function OnField({
           id="on-field-heading"
           className="text-xs font-bold uppercase tracking-wider text-muted"
         >
-          Active Players on Pitch
+          Active Players on {surfaceName}
         </h2>
         <span className="text-xs font-medium text-muted">
           Tap card for career &amp; tactical intel

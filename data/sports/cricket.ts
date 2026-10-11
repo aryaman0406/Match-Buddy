@@ -194,6 +194,26 @@ export const cricketMatch: SportMatchConfig = {
       en: "Mandatory fielding restriction overs where only 2 fielders are permitted outside the 30-yard ring, encouraging attacking shots.",
       hinglish: "Shuruaat ke overs me sirf 2 fielders 30-yard boundary ke bahar reh sakte hain, jisse batters zyada boundaries laga sakein.",
     },
+    "free hit": {
+      term: "Free Hit Rule",
+      en: "Awarded after any no-ball delivery in limited-overs cricket. The batter cannot be dismissed off a free hit except through run out, obstructing the field, or hitting the ball twice.",
+      hinglish: "No-ball ke agle delivery par Free Hit milta hai, jisme batter sirf run out ya fielding me rukawat daalne par hi out ho sakta hai.",
+    },
+    "no ball": {
+      term: "No-Ball Delivery",
+      en: "An illegal delivery caused by overstepping the crease, a waist-high full toss, or fielding circle infractions, awarding 1 penalty run plus an immediate Free Hit.",
+      hinglish: "Line cross karne ya kamar se upar full toss daalne par umpire no-ball deta hai, jisse 1 penalty run aur Free Hit milta hai.",
+    },
+    drs: {
+      term: "Decision Review System (DRS)",
+      en: "A technology-assisted system allowing teams to challenge on-field umpire decisions using UltraEdge ball-tracking and Hawk-Eye trajectory. If the on-field decision stands, the reviewing team loses a review.",
+      hinglish: "DRS ke through teams umpire ke decision ko challenge karti hain. UltraEdge aur ball-tracking se check kiya jata hai. Agar decision change nahi hota toh review loss hota hai.",
+    },
+    wide: {
+      term: "Wide Ball Delivery",
+      en: "A delivery judged too wide outside off or leg stump for the batter to hit with a standard stroke, penalizing the bowling team 1 extra run and requiring the ball to be bowled again.",
+      hinglish: "Batter ki normal reach se door jaane wali delivery ko umpire wide deta hai. 1 extra run milta hai aur ball dobara phenkni padti hai.",
+    },
   },
   simulationSequence: [
     {

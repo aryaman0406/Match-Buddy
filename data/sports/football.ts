@@ -155,6 +155,41 @@ export const footballMatch: SportMatchConfig = {
       en: "A video review system that assists the main referee in overturning clear and obvious errors in goals, penalty decisions, direct red cards, and mistaken identity.",
       hinglish: "VAR video replay system hai jo referee ko penalties, goals aur red cards ke clear decisions check karne me help karta hai.",
     },
+    "red card": {
+      term: "Red Card (Sending-Off)",
+      en: "A referee shows a red card for serious foul play, violent conduct, denying an obvious goal-scoring opportunity (DOGSO), or receiving two yellow cards. The player is sent off and cannot be replaced.",
+      hinglish: "Referee violent tackle, clear goal mauka rokne (DOGSO), ya do yellow cards milne par red card dikhata hai. Player ko bahar bhej diya jata hai aur team 10 khiladiyo ke saath khelti hai.",
+    },
+    "extra time": {
+      term: "Extra Time (30 Minutes)",
+      en: "In knockout ties level after 90 minutes of regulation, two 15-minute halves of extra time are played. If the score remains tied, the winner is determined by a penalty shootout.",
+      hinglish: "Knockout matches me 90 minutes baad score tie hone par 15-15 minute ke do extra time periods khele jaate hain. Phir bhi score barabar rahe toh penalty shootout hota hai.",
+    },
+    penalty: {
+      term: "Penalty Kick (12 Yards)",
+      en: "Awarded when a defending player commits a direct free-kick foul inside their own penalty box. An attacker takes an uncontested direct shot on goal from the 12-yard penalty spot.",
+      hinglish: "Apne penalty box ke andar defender ke foul karne par penalty milti hai. Attacker 12 yards door penalty spot se seedha goalkeeper ke khilaf shot leta hai.",
+    },
+    handball: {
+      term: "Handball Offense",
+      en: "A foul called when an outfield player deliberately touches the ball with their arm/hand, or when the arm is positioned unnaturally to make the body bigger.",
+      hinglish: "Jab ball outfield player ke haath ya baazu par jaan-bujhkar ya unnatural position me lagti hai, toh referee handball ka foul deta hai.",
+    },
+    "yellow card": {
+      term: "Yellow Card (Caution)",
+      en: "Issued by the referee for reckless challenges, unsporting behavior, or persistent offenses. Receiving two yellow cards in a single match results in a red card sending-off.",
+      hinglish: "Khatarnaak challenge ya unsporting behavior par yellow card caution milta hai. Ek match me 2 yellow cards milne par player ko red card dikha kar bahar bhej diya jata hai.",
+    },
+    corner: {
+      term: "Corner Kick",
+      en: "Awarded to the attacking team when the ball fully crosses the goal line after last touching a defending player without a goal being scored.",
+      hinglish: "Jab defender ya goalkeeper ke touch ke baad ball goal line ke bahar chali jaati hai, toh attacking team ko corner flag se corner kick milti hai.",
+    },
+    "free kick": {
+      term: "Free Kick (Direct & Indirect)",
+      en: "Direct free kicks allow a direct shot on goal for contact fouls. Indirect free kicks require another player to touch the ball before scoring, awarded for technical infractions like dangerous play or offside.",
+      hinglish: "Contact foul par direct free kick milti hai jisse seedha goal mara ja sakta hai. Non-contact infractions par indirect free kick milti hai jisme dusra player pehle touch karta hai.",
+    },
   },
   simulationSequence: [
     {

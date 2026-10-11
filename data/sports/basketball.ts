@@ -141,7 +141,17 @@ export const basketballMatch: SportMatchConfig = {
       en: "Achieving double-digit figures (10 or more) in three of the five statistical categories: points, rebounds, assists, steals, or blocks.",
       hinglish: "Ek match me 5 stats (points, rebounds, assists, steals, blocks) me se kisi 3 me 10 ya usse zyada score karna.",
     },
+    "triple double": {
+      term: "Triple-Double",
+      en: "Achieving double-digit figures (10 or more) in three of the five statistical categories: points, rebounds, assists, steals, or blocks.",
+      hinglish: "Ek match me 5 stats (points, rebounds, assists, steals, blocks) me se kisi 3 me 10 ya usse zyada score karna.",
+    },
     traveling: {
+      term: "Traveling Violation",
+      en: "Taking more than two steps without dribbling the basketball or illegally moving the pivot foot once established.",
+      hinglish: "Bina ball bounce kiye 2 se zyada steps chalna violation hota hai aur ball doosri team ko mil jaati hai.",
+    },
+    travel: {
       term: "Traveling Violation",
       en: "Taking more than two steps without dribbling the basketball or illegally moving the pivot foot once established.",
       hinglish: "Bina ball bounce kiye 2 se zyada steps chalna violation hota hai aur ball doosri team ko mil jaati hai.",
@@ -150,6 +160,36 @@ export const basketballMatch: SportMatchConfig = {
       term: "Goaltending",
       en: "Illegally touching the basketball on its downward trajectory towards the rim, or when it is directly above the cylinder.",
       hinglish: "Ball jab basket ki taraf neeche aa rahi ho tab use touch karna illegal hai, aur opponent ko points de diye jaate hain.",
+    },
+    "goal tending": {
+      term: "Goaltending",
+      en: "Illegally touching the basketball on its downward trajectory towards the rim, or when it is directly above the cylinder.",
+      hinglish: "Ball jab basket ki taraf neeche aa rahi ho tab use touch karna illegal hai, aur opponent ko points de diye jaate hain.",
+    },
+    "technical foul": {
+      term: "Technical Foul",
+      en: "Assessed for unsportsmanlike conduct, arguing with officials, or procedural violations. Grants the opposing team one free throw, with play resuming from the point of interruption.",
+      hinglish: "Referee se behes ya unsportsmanlike behavior par technical foul lagta hai. Opponent team ko ek free throw milta hai aur play point of interruption se resume hota hai.",
+    },
+    backcourt: {
+      term: "Backcourt Violation",
+      en: "Once the offensive team crosses the half-court line into the frontcourt, they cannot pass or dribble the ball back across half-court into the backcourt.",
+      hinglish: "Half-court line cross karne ke baad attacking team ball ko wapas peeche backcourt me nahi bhej sakti.",
+    },
+    "three seconds": {
+      term: "Three-Second Rule (In the Key)",
+      en: "An offensive player cannot remain in the restricted paint area (the key) for more than three consecutive seconds without actively attempting a shot.",
+      hinglish: "Attacking player basket ke neeche paint/key area me 3 seconds se zyada nahi reh sakta bina shot attempt kiye.",
+    },
+    "free throw": {
+      term: "Free Throw",
+      en: "An uncontested 15-foot shot worth 1 point awarded to a fouled player following shooting fouls, bonus team fouls, or technical fouls.",
+      hinglish: "Shooting foul hone par player ko 15-feet door free-throw line se uncontested 1 point ka shot milta hai.",
+    },
+    foul: {
+      term: "Personal Foul",
+      en: "Illegal physical contact against an opponent such as pushing, holding, or blocking. An NBA player is disqualified upon committing six personal fouls.",
+      hinglish: "Opponent ko illegal touch ya push karne par personal foul hota hai. NBA match me 6 fouls hone par player foul-out hokar bahar ho jaata hai.",
     },
   },
   simulationSequence: [
