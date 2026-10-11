@@ -10,6 +10,7 @@ export interface Player {
   country: string;
   homeState?: string;
   formats?: string[];
+  competitions?: string[];
   isStriker?: boolean; // In cricket: batter on strike facing delivery. In other sports: primary active attacker.
   avatarInitials: string;
   keyFacts: string[];
@@ -76,6 +77,7 @@ export interface SportMatchConfig {
   sportIcon: string;
   matchTitle: string;
   seriesOrLeague: string;
+  formatsLabel?: "Formats" | "Competitions";
   teams: [string, string];
   teamFullNames: [string, string];
   winProbability: { team1: number; team2: number };

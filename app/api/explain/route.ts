@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
 
   // 5. Read API key and Model strictly from server environment variables
   const apiKey = process.env.GEMINI_API_KEY;
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const modelName = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
   if (!apiKey) {
     // Return friendly 503 so client shows saved fallback gracefully
@@ -189,7 +189,29 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.warn("Gemini API call failed:", error);
+    const safeError = (error instanceof Error ? error.message : String(error)).replace(/AIza[0-9A-Za-z-_]{35}/g, "AIza***");
+    console.warn("Gemini API call failed:", safeError);
+
+    const isQuotaOrRateLimit =
+      safeError.includes("429") ||
+      safeError.toLowerCase().includes("quota") ||
+      safeError.toLowerCase().includes("resource_exhausted");
+
+    if (isQuotaOrRateLimit) {
+      return NextResponse.json(
+        {
+          error: "AI service rate limit reached. Showing saved fallback.",
+          code: "UPSTREAM_RATE_LIMIT",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": "15",
+          },
+        }
+      );
+    }
+
     return NextResponse.json(
       {
         error: "Failed to generate AI response from upstream model.",

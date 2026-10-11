@@ -51,7 +51,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased bg-background text-foreground min-h-screen flex flex-col items-center justify-start">
+      <body
+        suppressHydrationWarning
+        className="font-sans antialiased bg-background text-foreground min-h-screen flex flex-col items-center justify-start"
+      >
         {children}
       </body>
     </html>

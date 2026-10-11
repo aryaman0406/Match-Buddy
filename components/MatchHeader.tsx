@@ -203,6 +203,10 @@ export function MatchHeader({
         </button>
       </div>
 
+      {/* Illustrative scenario disclaimer line under scoreboard */}
+      <p className="text-xs text-muted/80 text-center sm:text-left pt-1 border-t border-theme/40 leading-relaxed">
+        Illustrative match scenario. Scores and match stats are fictional; player details come from a curated dataset.
+      </p>
     </section>
   );
 }

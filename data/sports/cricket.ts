@@ -7,6 +7,7 @@ export const cricketMatch: SportMatchConfig = {
   sportIcon: "🏏",
   matchTitle: "IND vs AUS",
   seriesOrLeague: "2nd T20I, Mumbai",
+  formatsLabel: "Formats",
   teams: ["IND", "AUS"],
   teamFullNames: ["India", "Australia"],
   winProbability: { team1: 62, team2: 38 },
@@ -25,12 +26,13 @@ export const cricketMatch: SportMatchConfig = {
       role: "Batter",
       onField: "41* (28)",
       country: "India",
-      homeState: "Gujarat",
+      homeState: "Born in Chansad, Gujarat",
       formats: ["T20I", "ODI", "IPL"],
       isStriker: true, // Star / strike icon represents the active batter currently on strike facing the bowler
       avatarInitials: "HP",
       // TODO verify: Hardik Pandya key facts
       keyFacts: [
+        "Born in Chansad, Gujarat",
         "Premier pace-bowling all-rounder and finisher for India",
         "Captained Gujarat Titans to the IPL title in their inaugural 2022 season",
         "Renowned for extreme composure and maximum hits under pressure",
@@ -46,12 +48,13 @@ export const cricketMatch: SportMatchConfig = {
       role: "Batter",
       onField: "22* (14)",
       country: "India",
-      homeState: "Maharashtra",
+      homeState: "Born in Mumbai, Maharashtra",
       formats: ["T20I", "ODI", "IPL"],
       isStriker: false,
       avatarInitials: "SK",
       // TODO verify: Suryakumar Yadav key facts
       keyFacts: [
+        "Born in Mumbai, Maharashtra",
         "Former ICC Men's No. 1 ranked T20I batter worldwide",
         "Famous for his unorthodox 360-degree sweep and ramp shots",
         "Captain of India's T20 international squad",
@@ -67,11 +70,12 @@ export const cricketMatch: SportMatchConfig = {
       role: "Bowler",
       onField: "3.0-0-28-1",
       country: "Australia",
-      homeState: "New South Wales",
-      formats: ["Test", "ODI", "IPL"],
+      homeState: "Born in Westmead, Sydney, New South Wales",
+      formats: ["Test", "ODI", "T20I", "IPL"],
       avatarInitials: "PC",
       // TODO verify: Pat Cummins key facts
       keyFacts: [
+        "Born in Westmead, Sydney, New South Wales",
         "Captain of Australia's 2023 World Test Championship and ODI World Cup triumphs",
         "ICC Men's Cricketer of the Year 2023",
         "High-release right-arm fast bowler who hits the hard deck with seam movement",
@@ -87,11 +91,12 @@ export const cricketMatch: SportMatchConfig = {
       role: "Bowler",
       onField: "2.2-0-18-1",
       country: "Australia",
-      homeState: "New South Wales",
+      homeState: "Born in Baulkham Hills, Sydney, New South Wales",
       formats: ["T20I", "ODI", "IPL"],
       avatarInitials: "MS",
       // TODO verify: Mitchell Starc key facts
       keyFacts: [
+        "Born in Baulkham Hills, Sydney, New South Wales",
         "Left-arm express pacer with 145+ km/h toe-crushing reverse-swinging yorkers",
         "All-time leading wicket-taker in ICC Men's Cricket World Cup tournaments",
         "Player of the Match in the 2024 IPL Final",

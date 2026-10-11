@@ -15,5 +15,5 @@ Event Title: ${ctx.title}
 Rule / Term in action: ${ctx.term}
 Time / Over: ${ctx.timeOrOver}
 
-Write exactly 2 short sentences (max 50 words): what this event or rule means in general, and what it means for this live match right now.`;
+Write exactly 2 short sentences (max 50 words): what this event or rule means in general, and what it means for this live match right now. Never invent stats beyond the provided dataset.`;
 }

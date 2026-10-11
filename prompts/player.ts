@@ -19,5 +19,5 @@ Current figures / stats on field: ${ctx.onField}
 Verified career facts:
 ${verifiedFacts}
 
-Write exactly 2 to 3 short sentences (max 60 words): who they are, one highlight using ONLY the verified facts above, and why they matter at this exact moment of the match.`;
+Write exactly 2 to 3 short sentences (max 60 words): who they are, one highlight using ONLY the verified facts above, and why they matter at this exact moment of the match. Strictly never invent or extrapolate player stats or match numbers beyond this dataset.`;
 }
