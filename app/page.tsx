@@ -97,24 +97,67 @@ export default function Home() {
     localStorage.setItem("match-buddy-banner-dismissed", "true");
   };
 
+  const getWhyItMattersForData = useCallback(
+    (
+      data: BottomSheetData,
+      targetLang: "en" | "hinglish",
+      match: SportMatchConfig = currentMatch
+    ): string => {
+      if (data.kind === "player") {
+        const player = match.players.find((p) => p.id === data.id);
+        const pName = player ? player.name : data.title;
+        const pOnField = player ? player.onField : "";
+        return targetLang === "hinglish"
+          ? `${pName} (${pOnField}) score ${scoreDisplay.primary} (${scoreDisplay.progress}) par game control kar rahe hain.`
+          : `${pName} (${pOnField}) is in action with the score at ${scoreDisplay.primary} (${scoreDisplay.progress}).`;
+      }
+      if (data.kind === "event") {
+        const event = match.events.find((e) => e.id === data.id);
+        const title = event ? event.title : data.title;
+        const term = event ? event.term : "";
+        return targetLang === "hinglish"
+          ? `${title} (${term}) ne match momentum ko shift kiya hai.`
+          : `${title} (${term}) shifted the tactical momentum of the contest.`;
+      }
+      if (data.kind === "story") {
+        return targetLang === "hinglish"
+          ? `Current score: ${scoreDisplay.primary}. ${scoreDisplay.secondaryStatus}`
+          : `Current situation: ${scoreDisplay.primary}. ${scoreDisplay.secondaryStatus}`;
+      }
+      // question
+      const playingSurface = match.sportId === "basketball" ? "court" : "pitch";
+      return targetLang === "hinglish"
+        ? "Iss sports rule ka seedha asar team ki strategy aur score par padta hai."
+        : `Understanding this rule unlocks tactical decisions made on the ${playingSurface}.`;
+    },
+    [currentMatch, scoreDisplay]
+  );
+
   const handlePersonaChange = (p: PersonaMode) => {
     setPersona(p);
     localStorage.setItem("match-buddy-persona", p);
-    if (isSheetOpen && sheetData) {
+    if (sheetData) {
       triggerExplanation(sheetData, language, currentMatch, p);
     }
   };
 
   const handleLanguageChange = (newLang: "en" | "hinglish") => {
-    // Cancel any current in-flight streaming
+    // Cancel any current in-flight streaming & speech
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
+    stopSpeech();
+    setIsSpeakingDesktop(false);
     setLanguage(newLang);
     localStorage.setItem("match-buddy-lang", newLang);
 
-    if (isSheetOpen && sheetData) {
-      triggerExplanation(sheetData, newLang, currentMatch, persona);
+    if (sheetData) {
+      const updatedData: BottomSheetData = {
+        ...sheetData,
+        whyItMatters: getWhyItMattersForData(sheetData, newLang, currentMatch),
+      };
+      setSheetData(updatedData);
+      triggerExplanation(updatedData, newLang, currentMatch, persona);
     }
   };
 
