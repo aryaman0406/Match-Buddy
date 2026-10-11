@@ -7,6 +7,7 @@ import {
   VolumeX,
   AlertCircle,
   Lightbulb,
+  CheckCircle,
 } from "lucide-react";
 import { speakText, stopSpeech, isSpeechSupported } from "@/lib/speech";
 
@@ -28,6 +29,7 @@ interface BottomSheetProps {
   streamedText: string;
   isLoading: boolean;
   isFallback: boolean;
+  reviewLabel?: string | null;
   language: "en" | "hinglish";
 }
 
@@ -38,6 +40,7 @@ export function BottomSheet({
   streamedText,
   isLoading,
   isFallback,
+  reviewLabel,
   language,
 }: BottomSheetProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -193,13 +196,23 @@ export function BottomSheet({
                 Match Intel
               </span>
 
+              {reviewLabel && !isFallback && (
+                <span
+                  role="status"
+                  className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1"
+                >
+                  <CheckCircle className="w-3 h-3" />
+                  <span>{reviewLabel}</span>
+                </span>
+              )}
+
               {isFallback && (
                 <span
                   role="status"
                   className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1"
                 >
                   <AlertCircle className="w-3 h-3" />
-                  <span>Showing a saved explanation</span>
+                  <span>Live AI is busy right now; showing a saved answer</span>
                 </span>
               )}
             </div>
@@ -237,6 +250,12 @@ export function BottomSheet({
             lang={language === "hinglish" ? "hi-Latn" : "en"}
             className="text-foreground text-sm leading-relaxed min-h-[56px]"
           >
+            {isFallback && !isLoading && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1.5 mb-2">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>Live AI is busy right now; showing a saved answer</span>
+              </p>
+            )}
             {isLoading && !streamedText ? (
               <div className="space-y-2.5 py-1">
                 <div className="h-4 w-full rounded-md animate-shimmer" />

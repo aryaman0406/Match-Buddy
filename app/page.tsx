@@ -12,7 +12,7 @@ import { defaultMatchProvider } from "@/data/provider";
 import { SportMatchConfig, Player, MatchEvent } from "@/data/types";
 import { calculateCricketWinProbability } from "@/lib/winProbability";
 import { speakText, stopSpeech, isSpeechSupported } from "@/lib/speech";
-import { X, Sparkles, AlertCircle, Volume2, VolumeX, Lightbulb } from "lucide-react";
+import { X, Sparkles, AlertCircle, Volume2, VolumeX, Lightbulb, CheckCircle } from "lucide-react";
 
 const emptySubscribe = () => () => {};
 
@@ -65,6 +65,7 @@ export default function Home() {
   const [streamedText, setStreamedText] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isFallback, setIsFallback] = useState<boolean>(false);
+  const [reviewLabel, setReviewLabel] = useState<string | null>(null);
 
   // Speech state for desktop panel
   const [isSpeakingDesktop, setIsSpeakingDesktop] = useState(false);
@@ -236,6 +237,7 @@ export default function Home() {
       setIsLoading(true);
       setStreamedText("");
       setIsFallback(false);
+      setReviewLabel(null);
 
       let receivedFirstToken = false;
 
@@ -295,6 +297,15 @@ export default function Home() {
           throw new Error(`Server returned HTTP ${response.status}`);
         }
 
+        const reviewHeader = response.headers.get("X-Review-Label");
+        if (reviewHeader) {
+          setReviewLabel(reviewHeader);
+        }
+        const sourceHeader = response.headers.get("X-Source");
+        if (sourceHeader === "fallback") {
+          setIsFallback(true);
+        }
+
         if (!response.body) {
           throw new Error("No response stream");
         }
@@ -324,6 +335,7 @@ export default function Home() {
         }
         // Graceful fallback on error, 429, 503, or timeout
         setIsFallback(true);
+        setReviewLabel(null);
         provideFallback(data, targetLang, activeMatch);
       } finally {
         clearTimeout(timeoutId);
@@ -337,8 +349,8 @@ export default function Home() {
   const handleSelectPlayer = (player: Player) => {
     const whyItMatters =
       language === "hinglish"
-        ? `${player.name} (${player.onField}) match ke critical juncture par action me hain.`
-        : `${player.name} (${player.onField}) holds the tactical key at this pivotal match moment.`;
+        ? `${player.name} (${player.onField}) score ${scoreDisplay.primary} (${scoreDisplay.progress}) par game control kar rahe hain.`
+        : `${player.name} (${player.onField}) is in action with the score at ${scoreDisplay.primary} (${scoreDisplay.progress}).`;
 
     const data: BottomSheetData = {
       title: `${player.name} (${player.role})`,
@@ -359,9 +371,13 @@ export default function Home() {
         ? `${event.title} (${event.term}) ne match momentum ko shift kiya hai.`
         : `${event.title} (${event.term}) shifted the tactical momentum of the contest.`;
 
+    const catLabel = event.category
+      ? event.category.charAt(0).toUpperCase() + event.category.slice(1)
+      : "Rule";
+
     const data: BottomSheetData = {
       title: event.title,
-      subtitle: `${event.over} · Rule: ${event.term}`,
+      subtitle: `${event.over} · ${catLabel}: ${event.term}`,
       kind: "event",
       id: event.id,
       whyItMatters,
@@ -616,10 +632,16 @@ export default function Home() {
                       <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-surface-raised border border-theme text-muted uppercase tracking-wider">
                         Match Intel
                       </span>
+                      {reviewLabel && !isFallback && (
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>{reviewLabel}</span>
+                        </span>
+                      )}
                       {isFallback && (
                         <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5" />
-                          <span>Showing a saved explanation</span>
+                          <span>Live AI is busy right now; showing a saved answer</span>
                         </span>
                       )}
                     </div>
@@ -639,6 +661,12 @@ export default function Home() {
                       lang={language === "hinglish" ? "hi-Latn" : "en"}
                       className="mt-4 text-foreground text-sm leading-relaxed"
                     >
+                      {isFallback && !isLoading && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1.5 mb-2">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>Live AI is busy right now; showing a saved answer</span>
+                        </p>
+                      )}
                       {isLoading && !streamedText ? (
                         <div className="space-y-2.5 py-2">
                           <div className="h-4 w-full rounded-md animate-shimmer" />
@@ -718,7 +746,7 @@ export default function Home() {
                     Tap any player, event, or rule
                   </h4>
                   <p className="text-xs text-muted max-w-xs leading-relaxed">
-                    Select any batter or bowler on the pitch, breakdown a match moment, or ask a question below to see instant 2-line AI explanations.
+                    Select any batter or bowler on the pitch, break down a match moment, or ask a question below to see instant 2-line AI explanations.
                   </p>
                 </div>
               )}
@@ -744,6 +772,7 @@ export default function Home() {
           streamedText={streamedText}
           isLoading={isLoading}
           isFallback={isFallback}
+          reviewLabel={reviewLabel}
           language={language}
         />
       </div>

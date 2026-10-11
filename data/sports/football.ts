@@ -38,8 +38,8 @@ export const footballMatch: SportMatchConfig = {
         "Famous for electric acceleration and step-overs down the left wing",
       ],
       fallbackIntro: {
-        en: "Vinícius Júnior is Real Madrid's explosive Brazilian winger whose lethal pace terrorizes Barcelona's high defensive line. With 1 goal and 1 assist tonight, his breaks on the counter are the match's biggest threat.",
-        hinglish: "Vinícius Jr Real Madrid ke star Brazilian winger hain jinki speed Barça ki defense ke liye khatarnaak hai. Aaj unhone 1 goal aur 1 assist kiya hai aur counter-attack me game khatam kar sakte hain.",
+        en: "Vinícius Júnior has 1 goal and 1 assist as Real Madrid lead 2-1 at the 74th minute. His speed on the counter is Madrid's primary weapon with 16 minutes left.",
+        hinglish: "Vinícius Júnior 1 goal aur 1 assist ke saath Real Madrid ko 74th minute me 2-1 aage rakhe hue hain. Aakhri 16 minute me unki counter-attack runs sabse bada threat hain.",
       },
     },
     {
@@ -60,8 +60,8 @@ export const footballMatch: SportMatchConfig = {
         "Master of late runs into the penalty box and tireless pressing",
       ],
       fallbackIntro: {
-        en: "Jude Bellingham is Madrid's powerhouse midfielder who dominates both penalty boxes with box-to-box stamina and clutch instincts. Controlling midfield tempo, he anchors Madrid's 2-1 lead.",
-        hinglish: "Jude Bellingham Madrid ke complete box-to-box midfielder hain jo defense aur attack dono sambhalte hain. Clásico me late goals marne ke liye mashhoor hain aur lead maintain kar rahe hain.",
+        en: "Jude Bellingham has registered 89% pass accuracy and 4 tackles, shielding Madrid's backline as Barcelona chase an equalizer at 2-1.",
+        hinglish: "Jude Bellingham 89% pass accuracy aur 4 tackles ke saath Madrid ke midfield ko lead kar rahe hain jab Barcelona 2-1 par barabari ke liye attack kar rahi hai.",
       },
     },
     {
@@ -82,8 +82,8 @@ export const footballMatch: SportMatchConfig = {
         "Clinical inside the penalty box with elite aerial ability and positioning",
       ],
       fallbackIntro: {
-        en: "Robert Lewandowski is Barcelona's clinical spearhead who pulled one back in the 58th minute with a predator's finish. Needing an equalizer, all of Barça's attacking service is directed into his path.",
-        hinglish: "Lewandowski Barcelona ke clinical striker hain jinhone 58th minute me goal karke comeback shuru kiya. Barça ko barabari ke liye abhi bas un tak achhi ball supply karni hai.",
+        en: "Robert Lewandowski scored Barcelona's 58th-minute goal to cut the deficit to 2-1. With 16 minutes remaining, he leads Barcelona's penalty box attack.",
+        hinglish: "Robert Lewandowski ne 58th minute me goal karke score 2-1 kiya. Aakhri 16 minute me Barcelona unhi ke zariye equalizer dhoondh rahi hai.",
       },
     },
     {
@@ -104,8 +104,8 @@ export const footballMatch: SportMatchConfig = {
         "Youngest goalscorer in La Liga and El Clásico history",
       ],
       fallbackIntro: {
-        en: "Lamine Yamal is Barcelona's 17-year-old wonderkid whose left-footed wizardry on the right flank keeps Madrid's left-back pinned back. His teasing crosses are creating constant danger in the final third.",
-        hinglish: "Lamine Yamal Spain aur Barça ke 17 saal ke superstar winger hain jo right flank se jabardast dribbling aur crosses kar rahe hain. Har attack unhi ke pairon se create ho raha hai.",
+        en: "Lamine Yamal has produced 5 dribbles and 3 key passes, spearheading Barcelona's right wing attack trailing 2-1 in El Clásico.",
+        hinglish: "Lamine Yamal 5 dribbles aur 3 key passes complete kar chuke hain. 2-1 ke scoreline me wo Madrid ke defense par constant pressure bana rahe hain.",
       },
     },
   ],
@@ -114,6 +114,7 @@ export const footballMatch: SportMatchConfig = {
       id: "evt-var-check",
       over: "69'",
       type: "drs",
+      category: "review",
       title: "VAR Check: Penalty Overruled",
       term: "VAR & Penalty Rule",
       badgeText: "VAR CHECK",
@@ -127,6 +128,7 @@ export const footballMatch: SportMatchConfig = {
       id: "evt-lewa-goal",
       over: "58'",
       type: "free-hit",
+      category: "shot",
       title: "GOAL! Lewandowski Header",
       term: "Offside Trap Beaten",
       badgeText: "GOAL (2-1)",
@@ -167,6 +169,7 @@ export const footballMatch: SportMatchConfig = {
         id: "sim-fb-save-82",
         over: "82'",
         type: "free-hit",
+        category: "skill",
         title: "WHAT A SAVE! Courtois Denies Yamal",
         term: "Diving Save & Corner Kick",
         badgeText: "BIG CHANCE",
@@ -189,6 +192,7 @@ export const footballMatch: SportMatchConfig = {
         id: "sim-fb-goal-89",
         over: "89'",
         type: "free-hit",
+        category: "shot",
         title: "GOAL! Vinicius Jr Breakaway Seal",
         term: "Counter-Attack Goal",
         badgeText: "GOAL (3-1)",

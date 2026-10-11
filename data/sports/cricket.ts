@@ -1,5 +1,22 @@
 import { SportMatchConfig } from "../types";
 
+export function getCricketPhaseTag(overStr: string): "POWERPLAY" | "MIDDLE OVERS" | "DEATH OVERS" {
+  const [oversPart, ballsPart] = overStr.split(".");
+  const completedOvers = parseInt(oversPart, 10);
+  const balls = ballsPart ? parseInt(ballsPart, 10) : 0;
+  // If e.g. "6.0", completedOvers is 6 with 0 extra balls (end of over 6 / Powerplay)
+  // If "6.1", over 7 is underway (Middle overs)
+  const currentOverNumber = isNaN(completedOvers)
+    ? 1
+    : balls === 0 && completedOvers > 0
+    ? completedOvers
+    : completedOvers + 1;
+
+  if (currentOverNumber <= 6) return "POWERPLAY";
+  if (currentOverNumber <= 15) return "MIDDLE OVERS";
+  return "DEATH OVERS";
+}
+
 export const cricketMatch: SportMatchConfig = {
   id: "cricket-ind-aus",
   sportId: "cricket",
@@ -38,8 +55,8 @@ export const cricketMatch: SportMatchConfig = {
         "Renowned for extreme composure and maximum hits under pressure",
       ],
       fallbackIntro: {
-        en: "Hardik Pandya is India's premier pace-bowling all-rounder, renowned for calm finishing under pressure. At 41* (28), his presence at the crease is the deciding factor in whether India scales the 54-run target.",
-        hinglish: "Hardik Pandya India ke star all-rounder hain jo aakhri overs me game finish karne ke liye jaane jaate hain. Abhi 41* runs pe batting kar rahe hain aur unka tikna sabse zaroori hai.",
+        en: "Hardik Pandya is batting on 41* off 28 balls with India at 112/3 in 14.2 overs. Needing 54 runs from 34 balls at an RRR of 9.53, he anchors India's chase.",
+        hinglish: "Hardik Pandya 14.2 overs me 41* (28) par batting kar rahe hain jab India ka score 112/3 hai. India ko jeet ke liye 34 balls me 54 runs chahiye.",
       },
     },
     {
@@ -60,8 +77,8 @@ export const cricketMatch: SportMatchConfig = {
         "Captain of India's T20 international squad",
       ],
       fallbackIntro: {
-        en: "Suryakumar Yadav is a 360-degree stroke maker capable of finding boundary angles behind square. At 22* off 14, his partnership with Hardik keeps Australia's pacers under intense pressure.",
-        hinglish: "Surya India ke 360-degree batter hain jo ground ke har kone me aasaani se shots laga sakte hain. Abhi 22* runs bana chuke hain aur Hardik ke saath chase control kar rahe hain.",
+        en: "Suryakumar Yadav is on 22* off 14 balls, partnering Hardik with India requiring 54 off 34 deliveries. His quick boundary scoring keeps Australia under sustained pressure.",
+        hinglish: "Suryakumar Yadav 22* (14) par unbeaten hain aur Hardik ke saath 54 runs ke target chase me RRR ko 9.53 par control kar rahe hain.",
       },
     },
     {
@@ -81,8 +98,8 @@ export const cricketMatch: SportMatchConfig = {
         "High-release right-arm fast bowler who hits the hard deck with seam movement",
       ],
       fallbackIntro: {
-        en: "Pat Cummins is Australia's talismanic leader who relies on hard-length cutters and pinpoint bouncers to strangle run rates in the death overs. Bowling with figures of 3-0-28-1, breaking this partnership is his sole objective.",
-        hinglish: "Pat Cummins Australia ke captain aur world-class fast bowler hain jo pressure overs me tight line daalne ke liye jaane jaate hain. 3 overs me 28 dekar 1 wicket le chuke hain.",
+        en: "Pat Cummins has returned figures of 3.0-0-28-1 as Australia defend 166. Defending 54 runs in 34 balls, his bowling changes dictate Australia's defense.",
+        hinglish: "Pat Cummins ne 3 overs me 28 dekar 1 wicket liya hai. Australia 166 defend kar rahi hai aur unhe Hardik-Surya ki partnership todni hai.",
       },
     },
     {
@@ -102,8 +119,8 @@ export const cricketMatch: SportMatchConfig = {
         "Player of the Match in the 2024 IPL Final",
       ],
       fallbackIntro: {
-        en: "Mitchell Starc is cricket's premier left-arm strike bowler whose 145 km/h yorkers are lethal at the death. At 2.2-0-18-1, his final 10 deliveries could seal the match for Australia.",
-        hinglish: "Mitchell Starc left-arm express pacer hain jo 145+ speed se toe-crushing yorkers daalte hain. 2.2 overs me 18 run dekar 1 wicket le chuke hain.",
+        en: "Mitchell Starc has taken 1 for 18 in 2.2 overs with 145 km/h deliveries. He has 10 balls remaining to defend 54 runs against Hardik and Surya.",
+        hinglish: "Mitchell Starc 2.2 overs me 18 run dekar 1 wicket nikal chuke hain. Australia ke liye unke aakhri 10 deliveries match-defining hain.",
       },
     },
   ],
@@ -112,9 +129,10 @@ export const cricketMatch: SportMatchConfig = {
       id: "evt-starc-yorker",
       over: "14.2",
       type: "free-hit",
-      title: "Starc Yorker Dug Out for Single",
+      category: "skill",
+      title: "Starc's yorker dug out, single taken",
       term: "Inswinging Yorker",
-      badgeText: "DEATH OVERS",
+      badgeText: getCricketPhaseTag("14.2"),
       badgeColor: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30",
       fallbackExplain: {
         en: "Mitchell Starc nailed a 144 km/h inswinging yorker at Hardik Pandya's boots. Hardik jammed the bat down in time to squeeze a single into the covers.",
@@ -125,9 +143,10 @@ export const cricketMatch: SportMatchConfig = {
       id: "evt-sky-boundary",
       over: "13.5",
       type: "free-hit",
+      category: "shot",
       title: "FOUR! Surya 360 Scoop Over Fine Leg",
       term: "360-Degree Ramp",
-      badgeText: "BOUNDARY",
+      badgeText: getCricketPhaseTag("13.5"),
       badgeColor: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
       fallbackExplain: {
         en: "Suryakumar Yadav got down on one knee and ramped Cummins over short fine leg for a boundary, cutting the required run rate below 10.",
@@ -138,13 +157,14 @@ export const cricketMatch: SportMatchConfig = {
       id: "evt-drs-review",
       over: "12.3",
       type: "drs",
-      title: "DRS Review: Australia Loss of Review",
+      category: "review",
+      title: "DRS: Australia Review Lost, Decision Stands",
       term: "Decision Review System (DRS)",
-      badgeText: "DRS OVERTURNED",
-      badgeColor: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30",
+      badgeText: "REVIEW LOST",
+      badgeColor: "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30",
       fallbackExplain: {
-        en: "Australia reviewed an LBW shout against Hardik. Ball tracking showed the impact was outside off-stump, confirming the not-out decision.",
-        hinglish: "Australia ne Hardik ke khilaf LBW review liya par ball off-stump ke bahar pitch hui thi, isliye umpire ka not out decision barkarar raha.",
+        en: "Australia reviewed an on-field not-out LBW decision against Hardik Pandya. Ball tracking confirmed impact was outside off-stump, meaning the on-field decision stands and Australia lost their review.",
+        hinglish: "Australia ne Hardik Pandya ke khilaf on-field not-out decision par DRS review liya. Ball tracking me impact outside off raha, isliye on-field decision barkarar raha aur Australia ne apna review gawa diya.",
       },
     },
   ],
@@ -189,9 +209,10 @@ export const cricketMatch: SportMatchConfig = {
         id: "sim-four-14-3",
         over: "14.3",
         type: "free-hit",
+        category: "shot",
         title: "FOUR! Cracking Cover Drive by Hardik",
         term: "Boundary (4 Runs)",
-        badgeText: "BOUNDARY",
+        badgeText: getCricketPhaseTag("14.3"),
         badgeColor: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
         fallbackExplain: {
           en: "Hardik opened the face of the blade and pierced extra cover for four. India are now within 50 runs of victory.",
@@ -212,9 +233,10 @@ export const cricketMatch: SportMatchConfig = {
         id: "sim-six-14-5",
         over: "14.5",
         type: "free-hit",
+        category: "shot",
         title: "SIX! Trademark SKY Scoop Ramp",
         term: "Maximum (6 Runs)",
-        badgeText: "MAXIMUM",
+        badgeText: getCricketPhaseTag("14.5"),
         badgeColor: "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30",
         fallbackExplain: {
           en: "Surya used Starc's 144 km/h pace to ramp the ball deep over fine leg. RRR plunges down to 8.32.",
@@ -235,9 +257,10 @@ export const cricketMatch: SportMatchConfig = {
         id: "sim-fifty-15-1",
         over: "15.1",
         type: "free-hit",
+        category: "skill",
         title: "50 FOR HARDIK PANDYA! (31b)",
         term: "Half-Century Milestone",
-        badgeText: "50 RUNS",
+        badgeText: getCricketPhaseTag("15.1"),
         badgeColor: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
         fallbackExplain: {
           en: "Hardik Pandya brings up a clutch 31-ball fifty under intense chase pressure. India are now firm favorites.",

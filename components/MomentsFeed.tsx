@@ -89,19 +89,20 @@ export function MomentsFeed({
                       </span>
                     </div>
                     <p className="text-xs text-muted mt-0.5 truncate font-medium">
-                      Tactical rule: <span className="text-foreground/90 font-semibold">{event.term}</span>
+                      {(event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : "Rule")}:{" "}
+                      <span className="text-foreground/90 font-semibold">{event.term}</span>
                     </p>
                   </div>
                 </div>
 
-                {/* Right: Breakdown button with 44px min touch target */}
+                {/* Right: Break down button with 44px min touch target */}
                 <button
                   type="button"
                   onClick={() => onExplainEvent(event)}
-                  aria-label={`Breakdown ${event.title}`}
+                  aria-label={`Break down ${event.title}`}
                   className="shrink-0 min-h-[44px] min-w-[44px] px-3.5 py-2 rounded-xl bg-surface-raised hover:bg-indigo-600 hover:text-white border border-theme hover:border-indigo-600 text-foreground text-xs font-semibold transition-all duration-150 active:scale-95 flex items-center gap-1 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
                 >
-                  <span>Breakdown</span>
+                  <span>Break down</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </article>

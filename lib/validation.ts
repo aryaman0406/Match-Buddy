@@ -26,11 +26,19 @@ export interface ValidationSuccess {
       team: string;
       onField: string;
       keyFacts: string[];
+      fallbackIntro?: {
+        en: string;
+        hinglish: string;
+      };
     };
     eventData?: {
       title: string;
       term: string;
       over: string;
+      fallbackExplain?: {
+        en: string;
+        hinglish: string;
+      };
     };
   };
 }
@@ -126,6 +134,13 @@ export function validateExplainInput(body: ExplainRequestBody | null | undefined
             team: String(pData.team || pData.country || "Team"),
             onField: String(pData.onField || "Active"),
             keyFacts: Array.isArray(pData.keyFacts) ? pData.keyFacts.map(String) : [],
+            fallbackIntro:
+              pData.fallbackIntro && typeof pData.fallbackIntro === "object"
+                ? {
+                    en: String((pData.fallbackIntro as Record<string, unknown>).en || ""),
+                    hinglish: String((pData.fallbackIntro as Record<string, unknown>).hinglish || ""),
+                  }
+                : undefined,
           }
         : undefined,
       eventData: eData
@@ -133,6 +148,13 @@ export function validateExplainInput(body: ExplainRequestBody | null | undefined
             title: String(eData.title || "Match Event"),
             term: String(eData.term || "Rule"),
             over: String(eData.over || "Live"),
+            fallbackExplain:
+              eData.fallbackExplain && typeof eData.fallbackExplain === "object"
+                ? {
+                    en: String((eData.fallbackExplain as Record<string, unknown>).en || ""),
+                    hinglish: String((eData.fallbackExplain as Record<string, unknown>).hinglish || ""),
+                  }
+                : undefined,
           }
         : undefined,
     },

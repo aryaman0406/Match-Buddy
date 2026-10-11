@@ -21,11 +21,13 @@ export interface Player {
 }
 
 export type EventType = "free-hit" | "drs" | "wicket" | "powerplay" | "impact-player";
+export type EventCategory = "rule" | "shot" | "skill" | "review";
 
 export interface MatchEvent {
   id: string;
   over: string; // over in cricket (e.g. "14.2") or game minute/quarter in football/basketball (e.g. "74'", "Q4 3:12")
   type: EventType;
+  category: EventCategory;
   title: string;
   term: string;
   badgeText: string;

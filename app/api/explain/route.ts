@@ -4,10 +4,14 @@ import { validateExplainInput } from "@/lib/validation";
 import { globalRateLimiter } from "@/lib/rateLimit";
 import { globalResponseCache, generateCacheKey } from "@/lib/cache";
 import { buildSystemPrompt } from "@/prompts/system";
-import { buildPlayerPrompt } from "@/prompts/player";
-import { buildEventPrompt } from "@/prompts/event";
 import { buildQuestionPrompt } from "@/prompts/question";
 import { buildStoryPrompt } from "@/prompts/story";
+
+import generatedAnswersJson from "@/data/generated/answers.json";
+
+import { cricketMatch } from "@/data/sports/cricket";
+import { footballMatch } from "@/data/sports/football";
+import { basketballMatch } from "@/data/sports/basketball";
 
 // Helper to simulate a streamed text response for cached or fallback responses
 function createSimulatedStream(text: string): ReadableStream<Uint8Array> {
@@ -79,7 +83,63 @@ export async function POST(req: NextRequest) {
   const { kind, id, text, language, persona, sport, matchContext, playerData, eventData } =
     validation.data;
 
-  // 3. Check in-memory response cache (30-minute TTL)
+  // 3. For players and events: check pre-generated file first, then fall back to saved text
+  if (kind === "player" || kind === "event") {
+    const normSport = sport.toLowerCase().includes("cricket")
+      ? "cricket"
+      : sport.toLowerCase().includes("football")
+      ? "football"
+      : sport.toLowerCase().includes("basketball")
+      ? "basketball"
+      : sport.toLowerCase();
+
+    const answersMap = generatedAnswersJson as Record<
+      string,
+      Record<string, Record<string, Record<string, string>>>
+    >;
+    const preGenerated = id ? answersMap?.[normSport]?.[id]?.[kind]?.[language] : undefined;
+
+    if (preGenerated && preGenerated.trim()) {
+      return new Response(createSimulatedStream(preGenerated.trim()), {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "X-Review-Label": "AI-written, reviewed",
+          "X-Source": "generated",
+        },
+      });
+    }
+
+    // Keep existing saved fallbacks as a last resort (Use live Gemini only for typed questions)
+    let savedFallback = "";
+    if (kind === "player") {
+      const allPlayers = [...cricketMatch.players, ...footballMatch.players, ...basketballMatch.players];
+      const matchPlayer = allPlayers.find((p) => p.id === id);
+      savedFallback =
+        matchPlayer?.fallbackIntro?.[language] ||
+        playerData?.fallbackIntro?.[language] ||
+        (language === "hinglish"
+          ? `${playerData?.name || "Player"} match me critical role play kar rahe hain.`
+          : `${playerData?.name || "Player"} is playing a key role in this clash.`);
+    } else {
+      const allEvents = [...cricketMatch.events, ...footballMatch.events, ...basketballMatch.events];
+      const matchEvent = allEvents.find((e) => e.id === id);
+      savedFallback =
+        matchEvent?.fallbackExplain?.[language] ||
+        eventData?.fallbackExplain?.[language] ||
+        (language === "hinglish"
+          ? `${eventData?.title || "Match event"} is match ka key moment hai.`
+          : `${eventData?.title || "Match event"} is a key match moment.`);
+    }
+
+    return new Response(createSimulatedStream(savedFallback), {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Source": "fallback",
+      },
+    });
+  }
+
+  // 4. Check in-memory response cache (30-minute TTL) for questions and stories
   const idOrText = id || text || kind;
   const cacheKey = generateCacheKey({
     kind,
@@ -99,29 +159,11 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // 4. Construct prompts from /prompts
+  // 5. Construct prompts from /prompts (Live Gemini used strictly for typed questions and story overviews)
   const systemInstruction = buildSystemPrompt(language, persona);
   let userPrompt = "";
 
-  if (kind === "player") {
-    userPrompt = buildPlayerPrompt({
-      name: playerData?.name || id || "Key Player",
-      role: playerData?.role || "Player",
-      team: playerData?.team || sport,
-      onField: playerData?.onField || "Active on pitch",
-      keyFacts: playerData?.keyFacts || [],
-      sport,
-      matchContext,
-    });
-  } else if (kind === "event") {
-    userPrompt = buildEventPrompt({
-      title: eventData?.title || "Match Event",
-      term: eventData?.term || "Tactical rule",
-      timeOrOver: eventData?.over || "Live",
-      sport,
-      matchContext,
-    });
-  } else if (kind === "story") {
+  if (kind === "story") {
     userPrompt = buildStoryPrompt({
       sport,
       matchContext: matchContext || `${sport} live match in progress.`,

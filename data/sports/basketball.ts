@@ -38,8 +38,8 @@ export const basketballMatch: SportMatchConfig = {
         "Unmatched basketball IQ and freight-train downhill transition drives",
       ],
       fallbackIntro: {
-        en: "LeBron James is the NBA's all-time scoring leader who commands the floor with unmatched court vision. Sitting on 28 points and 9 assists, he orchestrates every fourth-quarter possession for the Lakers.",
-        hinglish: "LeBron James basketball history ke sabse bade legend aur all-time top scorer hain. 28 points aur 9 assists bana chuke hain aur fourth quarter ke crucial moments me game unhi ke hath me hai.",
+        en: "LeBron James has recorded 28 points, 8 rebounds, and 9 assists with the Lakers holding a 108-104 lead with 2:45 left in Q4. He commands each possession to protect their 4-point cushion.",
+        hinglish: "LeBron James ne 28 points, 8 rebounds aur 9 assists banaye hain jab Lakers 108-104 se Q4 me 2:45 bache aage chal rahe hain. Wo 4-point ki lead protect karne ke liye game control kar rahe hain.",
       },
     },
     {
@@ -60,8 +60,8 @@ export const basketballMatch: SportMatchConfig = {
         "Represented Team USA at the 2023 FIBA World Cup and starred in clutch NBA playoff runs",
       ],
       fallbackIntro: {
-        en: "Austin Reaves is the dynamic playmaking guard for the Lakers whose perimeter shot-making and pick-and-roll vision unlock fourth-quarter offense. With 19 points and 6 assists tonight, his poise with the ball stabilizes the Lakers down the stretch.",
-        hinglish: "Austin Reaves Lakers ke dynamic playmaking guard hain jo clutch moments me pressure shots aur smart assists banane me maahir hain. Aaj 19 points aur 6 assists bana chuke hain aur crunch time me ball unhi ke hath me hai.",
+        en: "Austin Reaves has contributed 19 points, 6 assists, and 3 three-pointers with the Lakers leading 108-104 in Q4 with 2:45 remaining. His perimeter shot creation relieves defensive traps on LeBron.",
+        hinglish: "Austin Reaves ne Lakers ke liye 19 points, 6 assists aur 3 three-pointers dale hain jab Lakers 108-104 aage hai. Unki scoring ability LeBron par se double-team pressure hatati hai.",
       },
     },
     {
@@ -82,8 +82,8 @@ export const basketballMatch: SportMatchConfig = {
         "Limitless shooting range extending well beyond 35 feet",
       ],
       fallbackIntro: {
-        en: "Stephen Curry is the greatest 3-point marksman in history whose limitless range stretches defenses past half-court. With 7 triples tonight and Warriors down 4, every screen is designed to free him.",
-        hinglish: "Steph Curry basketball ke sabse deadly 3-point shooter hain. 7 three-pointers maar chuke hain aur aakhri do minute me unka ek single shot match ko tie ya jeeta sakta hai.",
+        en: "Stephen Curry has scored 32 points on 7-of-13 shooting from beyond the arc with Golden State trailing 104-108 in Q4 (2:45 left). Warriors run off-ball screens to isolate him for open threes.",
+        hinglish: "Stephen Curry ne 7/13 three-pointers ke saath 32 points score kiye hain jab Warriors 104-108 peeche hain Q4 me 2:45 bache. Har offensive set unhe perimeter par open look dilane ke liye run ho raha hai.",
       },
     },
     {
@@ -104,8 +104,8 @@ export const basketballMatch: SportMatchConfig = {
         "Master of quarterbacking team defense and pushing the transition pace",
       ],
       fallbackIntro: {
-        en: "Draymond Green is Golden State's emotional heartbeat and defensive mastermind who sets the bone-crunching screens that liberate Curry. He directs defensive switches to keep the Warriors within striking distance.",
-        hinglish: "Draymond Green Warriors ke defensive mastermind hain jo team ke saare passes aur screens control karte hain. Curry ko open shot dilane me unka sabse bada role hota hai.",
+        en: "Draymond Green has registered 8 points, 9 rebounds, 10 assists, and 2 steals with Golden State down 104-108 with 2:45 left in Q4. He anchors the Warriors' defensive switches and sets high screens for Curry.",
+        hinglish: "Draymond Green ne 8 points, 9 rebounds, 10 assists aur 2 steals deliver kiye hain jab Warriors 104-108 peeche hai. Wo defensive stops nikaal rahe hain aur Curry ke liye high screens set kar rahe hain.",
       },
     },
   ],
@@ -114,6 +114,7 @@ export const basketballMatch: SportMatchConfig = {
       id: "evt-curry-three",
       over: "Q4 3:12",
       type: "free-hit",
+      category: "shot",
       title: "Curry Step-Back 3-Pointer!",
       term: "3-Point Shot",
       badgeText: "DEEP THREE",
@@ -164,6 +165,7 @@ export const basketballMatch: SportMatchConfig = {
         id: "sim-bb-curry-clutch",
         over: "Q4 1:15",
         type: "free-hit",
+        category: "shot",
         title: "CURRY PULL-UP 3-POINTER! 1-POSSESSION GAME",
         term: "Pull-Up 3-Pointer",
         badgeText: "CLUTCH THREE",
@@ -186,6 +188,7 @@ export const basketballMatch: SportMatchConfig = {
         id: "sim-bb-lebron-andone",
         over: "Q4 0:24",
         type: "free-hit",
+        category: "skill",
         title: "LEBRON AND-ONE DOWNHILL DRIVE!",
         term: "Basket + Free Throw (And-One)",
         badgeText: "CLUTCH AND-1",
