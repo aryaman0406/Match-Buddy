@@ -31,6 +31,9 @@ function createSimulatedStream(text: string): ReadableStream<Uint8Array> {
   });
 }
 
+// Allow up to 15s for streaming responses on Vercel Serverless Functions
+export const maxDuration = 15;
+
 export async function POST(req: NextRequest) {
   // 1. IP extraction and Rate Limit check (20 requests per IP per 10 minutes)
   const ip =
