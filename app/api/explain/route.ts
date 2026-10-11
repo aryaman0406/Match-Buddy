@@ -6,6 +6,8 @@ import { globalResponseCache, generateCacheKey } from "@/lib/cache";
 import { buildSystemPrompt } from "@/prompts/system";
 import { buildQuestionPrompt } from "@/prompts/question";
 import { buildStoryPrompt } from "@/prompts/story";
+import { buildPlayerPrompt } from "@/prompts/player";
+import { buildEventPrompt } from "@/prompts/event";
 
 import { cricketMatch } from "@/data/sports/cricket";
 import { footballMatch } from "@/data/sports/football";
@@ -81,38 +83,51 @@ export async function POST(req: NextRequest) {
   const { kind, id, text, language, persona, sport, matchContext, playerData, eventData } =
     validation.data;
 
-  // 3. For players and events: return saved fallback text stream
-  if (kind === "player" || kind === "event") {
-    let savedFallback = "";
+  // Helper to retrieve verified, grounded fallback text if AI is unreachable or offline
+  const getSavedFallback = (): string => {
     if (kind === "player") {
       const allPlayers = [...cricketMatch.players, ...footballMatch.players, ...basketballMatch.players];
       const matchPlayer = allPlayers.find((p) => p.id === id);
-      savedFallback =
+      return (
         matchPlayer?.fallbackIntro?.[language] ||
         playerData?.fallbackIntro?.[language] ||
         (language === "hinglish"
           ? `${playerData?.name || "Player"} match me critical role play kar rahe hain.`
-          : `${playerData?.name || "Player"} is playing a key role in this clash.`);
-    } else {
+          : `${playerData?.name || "Player"} is playing a key role in this clash.`)
+      );
+    }
+    if (kind === "event") {
       const allEvents = [...cricketMatch.events, ...footballMatch.events, ...basketballMatch.events];
       const matchEvent = allEvents.find((e) => e.id === id);
-      savedFallback =
+      return (
         matchEvent?.fallbackExplain?.[language] ||
         eventData?.fallbackExplain?.[language] ||
         (language === "hinglish"
           ? `${eventData?.title || "Match event"} is match ka key moment hai.`
-          : `${eventData?.title || "Match event"} is a key match moment.`);
+          : `${eventData?.title || "Match event"} is a key match moment.`)
+      );
     }
+    if (kind === "story") {
+      const allMatches = [cricketMatch, footballMatch, basketballMatch];
+      const m = allMatches.find((cm) => cm.sportName.toLowerCase() === sport.toLowerCase()) || cricketMatch;
+      return m.storyFallback[language];
+    }
+    // question
+    const allMatches = [cricketMatch, footballMatch, basketballMatch];
+    const cleanQ = (text || "").toLowerCase();
+    for (const matchItem of allMatches) {
+      for (const [key, val] of Object.entries(matchItem.rulesDictionary)) {
+        if (cleanQ.includes(key)) {
+          return val[language];
+        }
+      }
+    }
+    return language === "hinglish"
+      ? "Abhi hum AI companion se connect nahi kar paaye. Kripya thodi der baad dobara koshish karein ya suggest kiye hue rules par tap karein!"
+      : "We couldn't reach the AI companion right now. Please try again in a moment or tap one of the suggested rules below!";
+  };
 
-    return new Response(createSimulatedStream(savedFallback), {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "X-Source": "fallback",
-      },
-    });
-  }
-
-  // 4. Check in-memory response cache (30-minute TTL) for questions and stories
+  // 3. Check in-memory response cache (30-minute TTL) across all kinds
   const idOrText = id || text || kind;
   const cacheKey = generateCacheKey({
     kind,
@@ -127,16 +142,52 @@ export async function POST(req: NextRequest) {
     return new Response(createSimulatedStream(cachedResponse), {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
+        "X-Review-Label": "Live AI",
         "X-Cache-Lookup": "HIT",
       },
     });
   }
 
-  // 5. Construct prompts from /prompts (Live Gemini used strictly for typed questions and story overviews)
+  // 4. Construct prompts from /prompts for all request kinds
   const systemInstruction = buildSystemPrompt(language, persona);
   let userPrompt = "";
 
-  if (kind === "story") {
+  if (kind === "player") {
+    const allPlayers = [...cricketMatch.players, ...footballMatch.players, ...basketballMatch.players];
+    const matchPlayer = allPlayers.find((p) => p.id === id);
+    const pName = playerData?.name || matchPlayer?.name || "Player";
+    const pRole = playerData?.role || matchPlayer?.role || "Player";
+    const pTeam = playerData?.team || matchPlayer?.country || "Team";
+    const pOnField = playerData?.onField || matchPlayer?.onField || "Active";
+    const pKeyFacts =
+      playerData?.keyFacts && playerData.keyFacts.length > 0
+        ? playerData.keyFacts
+        : (matchPlayer?.keyFacts || []);
+
+    userPrompt = buildPlayerPrompt({
+      name: pName,
+      role: pRole,
+      team: pTeam,
+      onField: pOnField,
+      keyFacts: pKeyFacts,
+      sport,
+      matchContext,
+    });
+  } else if (kind === "event") {
+    const allEvents = [...cricketMatch.events, ...footballMatch.events, ...basketballMatch.events];
+    const matchEvent = allEvents.find((e) => e.id === id);
+    const eTitle = eventData?.title || matchEvent?.title || "Match Event";
+    const eTerm = eventData?.term || matchEvent?.term || "Rule";
+    const eOver = eventData?.over || matchEvent?.over || "Live";
+
+    userPrompt = buildEventPrompt({
+      title: eTitle,
+      term: eTerm,
+      timeOrOver: eOver,
+      sport,
+      matchContext,
+    });
+  } else if (kind === "story") {
     userPrompt = buildStoryPrompt({
       sport,
       matchContext: matchContext || `${sport} live match in progress.`,
@@ -152,36 +203,64 @@ export async function POST(req: NextRequest) {
 
   // 5. Read API key and Model strictly from server environment variables
   const apiKey = process.env.GEMINI_API_KEY;
-  const modelName = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  const primaryModel = process.env.GEMINI_MODEL || "gemini-3.5-flash";
 
   if (!apiKey) {
-    // Return friendly 503 so client shows saved fallback gracefully
-    return NextResponse.json(
-      {
-        error: "AI service is currently in offline mode (GEMINI_API_KEY not configured).",
-        code: "NO_API_KEY",
+    // Return saved fallback stream with X-Source: fallback
+    return new Response(createSimulatedStream(getSavedFallback()), {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Source": "fallback",
       },
-      { status: 503 }
-    );
+    });
   }
 
-  // 6. Call Google Gemini Streaming API
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: modelName,
-      systemInstruction,
+  // Candidate models chain for maximum reliability and quota resilience
+  const candidateModels = [
+    primaryModel,
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+  ].filter((m, idx, arr) => arr.indexOf(m) === idx);
+
+  // 6. Call Google Gemini Streaming API with candidate model fallback
+  const genAI = new GoogleGenerativeAI(apiKey);
+  let streamResult = null;
+
+  for (const modelCandidate of candidateModels) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelCandidate,
+        systemInstruction,
+      });
+
+      streamResult = await model.generateContentStream(userPrompt);
+      break;
+    } catch (modelErr) {
+      const safeError = (modelErr instanceof Error ? modelErr.message : String(modelErr)).replace(
+        /AIza[0-9A-Za-z-_]{35}/g,
+        "AIza***"
+      );
+      console.warn(`Model candidate ${modelCandidate} failed:`, safeError);
+    }
+  }
+
+  if (!streamResult) {
+    return new Response(createSimulatedStream(getSavedFallback()), {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Source": "fallback",
+      },
     });
+  }
 
-    const result = await model.generateContentStream(userPrompt);
-
+  try {
     const encoder = new TextEncoder();
     let accumulatedText = "";
 
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of result.stream) {
+          for await (const chunk of streamResult.stream) {
             const chunkText = chunk.text();
             if (chunkText) {
               accumulatedText += chunkText;
@@ -203,39 +282,22 @@ export async function POST(req: NextRequest) {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-cache",
+        "X-Review-Label": "Live AI",
         "X-Cache-Lookup": "MISS",
       },
     });
   } catch (error) {
-    const safeError = (error instanceof Error ? error.message : String(error)).replace(/AIza[0-9A-Za-z-_]{35}/g, "AIza***");
-    console.warn("Gemini API call failed:", safeError);
-
-    const isQuotaOrRateLimit =
-      safeError.includes("429") ||
-      safeError.toLowerCase().includes("quota") ||
-      safeError.toLowerCase().includes("resource_exhausted");
-
-    if (isQuotaOrRateLimit) {
-      return NextResponse.json(
-        {
-          error: "AI service rate limit reached. Showing saved fallback.",
-          code: "UPSTREAM_RATE_LIMIT",
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": "15",
-          },
-        }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        error: "Failed to generate AI response from upstream model.",
-        code: "UPSTREAM_ERROR",
-      },
-      { status: 502 }
+    const safeError = (error instanceof Error ? error.message : String(error)).replace(
+      /AIza[0-9A-Za-z-_]{35}/g,
+      "AIza***"
     );
+    console.warn("Gemini streaming failed:", safeError);
+
+    return new Response(createSimulatedStream(getSavedFallback()), {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Source": "fallback",
+      },
+    });
   }
 }

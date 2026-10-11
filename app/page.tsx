@@ -439,7 +439,24 @@ export default function Home() {
       const striker = currentMatch.players.find((p) => p.isStriker) || currentMatch.players[0];
       if (striker) {
         const timer = setTimeout(() => {
-          handleSelectPlayer(striker);
+          const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+          const whyItMatters =
+            language === "hinglish"
+              ? `${striker.name} (${striker.onField}) score ${scoreDisplay.primary} (${scoreDisplay.progress}) par game control kar rahe hain.`
+              : `${striker.name} (${striker.onField}) is in action with the score at ${scoreDisplay.primary} (${scoreDisplay.progress}).`;
+
+          const data: BottomSheetData = {
+            title: `${striker.name} (${striker.role})`,
+            subtitle: `${striker.country} · ${currentMatch.sportName}`,
+            kind: "player",
+            id: striker.id,
+            whyItMatters,
+          };
+
+          setSheetData(data);
+          if (isDesktop) {
+            triggerExplanation(data, language, currentMatch, persona);
+          }
         }, 100);
         return () => clearTimeout(timer);
       }
