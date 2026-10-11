@@ -62,16 +62,28 @@ export function BottomSheet({
     onClose();
   }, [onClose]);
 
-  // Stop speech when bottom sheet unmounts
+  // Stop speech and clear any body scroll lock when bottom sheet unmounts
   useEffect(() => {
     return () => {
       stopSpeech();
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
     };
   }, []);
 
-  // Focus trap & escape key handler
+  // Focus trap & escape key handler & scroll lock (mobile only)
   useEffect(() => {
     if (isOpen) {
+      // If viewport is desktop (>=1024px), the bottom sheet modal is hidden (lg:hidden) and MUST NOT lock scroll
+      const isDesktop = typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches;
+      if (isDesktop) {
+        if (typeof document !== "undefined") {
+          document.body.style.overflow = "";
+        }
+        return;
+      }
+
       previouslyFocusedElement.current = document.activeElement as HTMLElement;
 
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -111,6 +123,10 @@ export function BottomSheet({
         previouslyFocusedElement.current?.focus();
         stopSpeech();
       };
+    } else {
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
     }
   }, [isOpen, handleClose]);
 

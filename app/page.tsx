@@ -187,18 +187,27 @@ export default function Home() {
     setStrikerId(selected.players[0]?.id || "");
   };
 
-  // Auto-close BottomSheet when resizing to desktop (>=1024px) to prevent body scroll lock
+  // Auto-close BottomSheet when on desktop (>=1024px) and clear any body scroll lock
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mql = window.matchMedia("(min-width: 1024px)");
     const handler = (e: MediaQueryListEvent | MediaQueryList) => {
-      if (e.matches && isSheetOpen) {
+      if (e.matches) {
         setIsSheetOpen(false);
+        if (typeof document !== "undefined") {
+          document.body.style.overflow = "";
+        }
       }
     };
+    if (mql.matches) {
+      setIsSheetOpen(false);
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
+    }
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
-  }, [isSheetOpen]);
+  }, []);
 
   // Synchronize document lang attribute with active language state
   useEffect(() => {
@@ -388,6 +397,10 @@ export default function Home() {
     [currentMatch, persona, scoreDisplay]
   );
 
+  // Helper to determine if bottom sheet modal should open (mobile only)
+  const shouldOpenMobileSheet = () =>
+    typeof window !== "undefined" && !window.matchMedia("(min-width: 1024px)").matches;
+
   // Sheet openers
   const handleSelectPlayer = (player: Player) => {
     const whyItMatters =
@@ -404,7 +417,9 @@ export default function Home() {
     };
 
     setSheetData(data);
-    setIsSheetOpen(true);
+    if (shouldOpenMobileSheet()) {
+      setIsSheetOpen(true);
+    }
     triggerExplanation(data, language, currentMatch, persona);
   };
 
@@ -427,7 +442,9 @@ export default function Home() {
     };
 
     setSheetData(data);
-    setIsSheetOpen(true);
+    if (shouldOpenMobileSheet()) {
+      setIsSheetOpen(true);
+    }
     triggerExplanation(data, language, currentMatch, persona);
   };
 
@@ -445,7 +462,9 @@ export default function Home() {
     };
 
     setSheetData(data);
-    setIsSheetOpen(true);
+    if (shouldOpenMobileSheet()) {
+      setIsSheetOpen(true);
+    }
     triggerExplanation(data, language, currentMatch, persona);
   };
 
@@ -461,7 +480,9 @@ export default function Home() {
     };
 
     setSheetData(data);
-    setIsSheetOpen(true);
+    if (shouldOpenMobileSheet()) {
+      setIsSheetOpen(true);
+    }
     triggerExplanation(data, language, currentMatch, persona);
   };
 
@@ -472,6 +493,9 @@ export default function Home() {
     stopSpeech();
     setIsSpeakingDesktop(false);
     setIsSheetOpen(false);
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "";
+    }
   };
 
   // Auto-load striker intro on initial page load
