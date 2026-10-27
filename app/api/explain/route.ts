@@ -37,6 +37,7 @@ function createSimulatedStream(text: string): ReadableStream<Uint8Array> {
 
 // Allow up to 15s for streaming responses on Vercel Serverless Functions
 export const maxDuration = 15;
+const modelRequestTimeoutMs = 6000;
 
 export async function POST(req: NextRequest) {
   // 1. IP extraction and Rate Limit check (20 requests per IP per 10 minutes)
@@ -203,7 +204,7 @@ export async function POST(req: NextRequest) {
 
   // 5. Read API key and Model strictly from server environment variables
   const apiKey = process.env.GEMINI_API_KEY;
-  const primaryModel = process.env.GEMINI_MODEL || "gemini-3.5-flash";
+  const primaryModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
   if (!apiKey) {
     // Return saved fallback stream with X-Source: fallback
@@ -218,7 +219,7 @@ export async function POST(req: NextRequest) {
   // Candidate models chain for maximum reliability and quota resilience
   const candidateModels = [
     primaryModel,
-    "gemini-3.5-flash",
+    "gemini-3.8-flash",
     "gemini-3.5-flash-lite",
   ].filter((m, idx, arr) => arr.indexOf(m) === idx);
 
@@ -233,7 +234,15 @@ export async function POST(req: NextRequest) {
         systemInstruction,
       });
 
-      streamResult = await model.generateContentStream(userPrompt);
+      streamResult = await Promise.race([
+        model.generateContentStream(userPrompt),
+        new Promise<never>((_, reject) => {
+          setTimeout(
+            () => reject(new Error(`Model request timed out after ${modelRequestTimeoutMs}ms`)),
+            modelRequestTimeoutMs
+          );
+        }),
+      ]);
       break;
     } catch (modelErr) {
       const safeError = (modelErr instanceof Error ? modelErr.message : String(modelErr)).replace(

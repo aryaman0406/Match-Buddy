@@ -63,7 +63,7 @@ flowchart TD
     end
 
     subgraph AI ["Upstream LLM"]
-        Gemini["Google Gemini API (gemini-2.0-flash)"]
+        Gemini["Google Gemini API (gemini-3.8-flash)"]
     end
 
     State -- "fetch('/api/explain')\n(Strict 10s Timeout Safeguard)" --> API
@@ -102,7 +102,7 @@ flowchart TD
    Add your Google Gemini API key:
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
-   GEMINI_MODEL=gemini-2.0-flash
+   GEMINI_MODEL=gemini-3.8-flash
    ```
    *(Note: The app will run smoothly with curated fallbacks even if no API key is supplied!)*
 
@@ -129,7 +129,7 @@ flowchart TD
 | Variable | Description | Default | Required? |
 | :--- | :--- | :--- | :--- |
 | `GEMINI_API_KEY` | Google Gemini API key used by the server route | *(empty)* | Optional (fallbacks engaged if missing) |
-| `GEMINI_MODEL` | Gemini generative model version | `gemini-2.0-flash` | Optional |
+| `GEMINI_MODEL` | Gemini generative model version | `gemini-3.8-flash` | Optional |
 
 > **Security Guardrail:** All Gemini API keys are read strictly on the server (`process.env.GEMINI_API_KEY`). The browser client never touches, receives, or stores API keys. `.env*` files are strictly gitignored.
 
